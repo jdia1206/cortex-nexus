@@ -66,27 +66,27 @@ export default function Dashboard() {
       userName={profile?.full_name}
       onLogout={signOut}
     >
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Welcome Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('dashboard.title')}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{t('dashboard.title')}</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
             {t('dashboard.welcome')}, {profile?.full_name}!
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           {statsCards.map((stat) => (
             <Card key={stat.key}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-3 sm:p-6">
+                <CardTitle className="text-xs font-medium text-muted-foreground sm:text-sm">
                   {t(`dashboard.${stat.key}`)}
                 </CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                <div className="text-lg font-bold sm:text-2xl">
                   {isLoading ? (
                     <span className="animate-pulse">...</span>
                   ) : (
@@ -99,7 +99,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Recent Sales */}
           <Card>
             <CardHeader>

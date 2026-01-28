@@ -21,7 +21,7 @@ export function AppLayout({ children, companyName, userName, onLogout }: AppLayo
             userName={userName}
             onLogout={onLogout}
           />
-          <main className="flex-1 overflow-auto bg-background p-4 lg:p-6">
+          <main className="flex-1 overflow-auto bg-background p-3 sm:p-4 lg:p-6">
             {children}
           </main>
         </SidebarInset>
