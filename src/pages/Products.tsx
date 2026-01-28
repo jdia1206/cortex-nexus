@@ -118,8 +118,6 @@ export default function Products() {
           onDelete={handleDelete}
           emptyTitle={t('products.empty')}
           emptyDescription={t('products.emptyDescription')}
-          emptyAction={t('products.add')}
-          onEmptyAction={() => setFormOpen(true)}
         />
 
         <ProductForm
