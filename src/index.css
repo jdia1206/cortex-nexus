@@ -2,36 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* VentaSaaS Design System - Enterprise/Business Theme
-   All colors MUST be HSL format
+/* VentaSaaS Design System - Custom Blue Theme
+   Colors: #101223, #263164, #26529a, #4b66ad, #8fa1d2
+   All colors in HSL format
 */
 
 @layer base {
   :root {
     /* Core backgrounds */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    --background: 230 20% 98%;
+    --foreground: 233 37% 10%;
 
     /* Cards & popovers */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 233 37% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 233 37% 10%;
 
-    /* Primary - Deep blue for enterprise feel */
-    --primary: 217 91% 50%;
+    /* Primary - #26529a */
+    --primary: 217 60% 38%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Soft neutral */
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
+    /* Secondary - #8fa1d2 light */
+    --secondary: 224 40% 94%;
+    --secondary-foreground: 233 37% 10%;
 
-    /* Muted elements */
-    --muted: 214 32% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted elements - based on #8fa1d2 */
+    --muted: 224 40% 96%;
+    --muted-foreground: 229 45% 40%;
 
-    /* Accent - Teal for highlights */
-    --accent: 173 58% 39%;
+    /* Accent - #4b66ad */
+    --accent: 223 40% 49%;
     --accent-foreground: 0 0% 100%;
 
     /* Status colors */
@@ -43,62 +44,80 @@
     --warning-foreground: 0 0% 100%;
 
     /* Form elements */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 50%;
+    --border: 224 40% 90%;
+    --input: 224 40% 90%;
+    --ring: 217 60% 38%;
     --radius: 0.5rem;
 
-    /* Sidebar - Darker for contrast */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar - #101223 dark */
+    --sidebar-background: 233 37% 10%;
+    --sidebar-foreground: 224 40% 90%;
+    --sidebar-primary: 217 60% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 18%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 20%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 229 45% 20%;
+    --sidebar-accent-foreground: 224 40% 90%;
+    --sidebar-border: 229 45% 18%;
+    --sidebar-ring: 217 60% 50%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Dark mode - inverted based on palette */
+    --background: 233 37% 10%;
+    --foreground: 224 40% 95%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --card: 229 45% 14%;
+    --card-foreground: 224 40% 95%;
+    --popover: 229 45% 14%;
+    --popover-foreground: 224 40% 95%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
+    /* Primary - #4b66ad in dark */
+    --primary: 223 40% 55%;
+    --primary-foreground: 233 37% 10%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary */
+    --secondary: 229 45% 20%;
+    --secondary-foreground: 224 40% 90%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    /* Muted */
+    --muted: 229 45% 18%;
+    --muted-foreground: 224 40% 65%;
 
-    --accent: 173 58% 39%;
+    /* Accent */
+    --accent: 217 60% 45%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 30%;
+    /* Status */
+    --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 71% 35%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 40%;
+    --warning: 38 92% 45%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
+    /* Form elements */
+    --border: 229 45% 20%;
+    --input: 229 45% 20%;
+    --ring: 223 40% 55%;
 
-    --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar */
+    --sidebar-background: 233 37% 7%;
+    --sidebar-foreground: 224 40% 90%;
+    --sidebar-primary: 217 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 12%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 15%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 229 45% 15%;
+    --sidebar-accent-foreground: 224 40% 90%;
+    --sidebar-border: 229 45% 12%;
+    --sidebar-ring: 217 60% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
