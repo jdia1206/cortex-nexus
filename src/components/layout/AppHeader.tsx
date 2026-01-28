@@ -89,7 +89,7 @@ export function AppHeader({ companyName, userName, onLogout }: AppHeaderProps) {
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
-              {t('settings.title')}
+              {t('nav.settings')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onLogout} className="text-destructive">
