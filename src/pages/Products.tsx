@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, DataTable, DeleteDialog, Column } from '@/components/shared';
@@ -8,6 +9,7 @@ import { useProductCategories } from '@/hooks/useProductCategories';
 import { ProductForm } from '@/components/products/ProductForm';
 import { CategoryManager } from '@/components/products/CategoryManager';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tables } from '@/integrations/supabase/types';
 
 type Product = Tables<'products'>;
@@ -96,13 +98,14 @@ export default function Products() {
           <PageHeader
             title={t('products.title')}
             description={t('products.description')}
-            actionLabel={t('products.add')}
-            onAction={() => {
-              setSelectedProduct(null);
-              setFormOpen(true);
-            }}
           />
-          <CategoryManager />
+          <div className="flex gap-2">
+            <CategoryManager />
+            <Button onClick={() => { setSelectedProduct(null); setFormOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('products.add')}
+            </Button>
+          </div>
         </div>
 
         <DataTable
