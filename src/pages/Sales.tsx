@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, DataTable, DeleteDialog, Column } from '@/components/shared';
 import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
+import { useCustomers } from '@/hooks/useCustomers';
 import { Badge } from '@/components/ui/badge';
 import { SalesFormDialog } from '@/components/sales/SalesFormDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -26,6 +27,7 @@ export default function Sales() {
   const { profile, tenant, signOut } = useAuth();
   const { sales, isLoading, create, delete: deleteSale, isCreating, isDeleting } = useSales();
   const { products } = useProducts();
+  const { customers } = useCustomers();
   const { formatCurrency } = useCurrency();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -145,6 +147,7 @@ export default function Sales() {
           open={formOpen}
           onOpenChange={setFormOpen}
           products={products}
+          customers={customers}
           onSubmit={handleSubmit}
           isSubmitting={isCreating}
           salesCount={sales.length}

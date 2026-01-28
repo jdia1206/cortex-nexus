@@ -15,7 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, ShoppingCart, User, Mail, Loader2, Building2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProductCatalog } from './ProductCatalog';
+import { CustomerSelector } from './CustomerSelector';
+import { Tables } from '@/integrations/supabase/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,10 +56,13 @@ interface CustomerInfo {
   phone: string;
 }
 
+type Customer = Tables<'customers'>;
+
 interface SalesFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   products: Product[];
+  customers: Customer[];
   onSubmit: (data: {
     invoice: {
       invoice_number: string;
@@ -93,6 +99,7 @@ export function SalesFormDialog({
   open,
   onOpenChange,
   products,
+  customers,
   onSubmit,
   isSubmitting,
   salesCount,
@@ -102,6 +109,8 @@ export function SalesFormDialog({
   const { tenant } = useAuth();
 
   const [receiptNumber, setReceiptNumber] = useState('');
+  const [customerMode, setCustomerMode] = useState<'existing' | 'new'>('existing');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     customerType: 'person',
     companyName: '',
@@ -137,21 +146,37 @@ export function SalesFormDialog({
 
   const { subtotal, taxAmount, total } = calculateTotals();
 
+  // Get email for receipt sending (from selected customer or manual input)
+  const getEmailForReceipt = () => {
+    if (customerMode === 'existing' && selectedCustomer) {
+      return selectedCustomer.email || customerInfo.email;
+    }
+    return customerInfo.email;
+  };
+
+  const getCustomerName = () => {
+    if (customerMode === 'existing' && selectedCustomer) {
+      return selectedCustomer.name;
+    }
+    return customerInfo.customerType === 'company' 
+      ? customerInfo.companyName || 'Customer'
+      : `${customerInfo.firstName} ${customerInfo.lastName}`.trim() || 'Customer';
+  };
+
   const sendReceiptEmailToCustomer = async () => {
-    if (!customerInfo.email) return;
+    const email = getEmailForReceipt();
+    if (!email) return;
     
     setIsSendingEmail(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-receipt-email', {
         body: {
-          to_email: customerInfo.email,
+          to_email: email,
           receipt_number: receiptNumber,
           receipt_date: new Date().toLocaleDateString(),
-          customer_name: customerInfo.customerType === 'company' 
-            ? customerInfo.companyName || 'Customer'
-            : `${customerInfo.firstName} ${customerInfo.lastName}`.trim() || 'Customer',
-          customer_email: customerInfo.email,
-          customer_phone: customerInfo.phone,
+          customer_name: getCustomerName(),
+          customer_email: email,
+          customer_phone: selectedCustomer?.phone || customerInfo.phone,
           company_name: tenant?.name || 'Company',
           company_email: tenant?.email,
           company_phone: tenant?.phone,
@@ -186,7 +211,7 @@ export function SalesFormDialog({
     await onSubmit({
       invoice: {
         invoice_number: receiptNumber,
-        customer_id: null,
+        customer_id: customerMode === 'existing' && selectedCustomer ? selectedCustomer.id : null,
         notes: notes || null,
         discount_amount: discount,
         subtotal,
@@ -204,7 +229,8 @@ export function SalesFormDialog({
     });
 
     // Send receipt email if checkbox is checked and email is provided
-    if (sendReceiptEmail && customerInfo.email) {
+    const email = getEmailForReceipt();
+    if (sendReceiptEmail && email) {
       await sendReceiptEmailToCustomer();
     }
 
@@ -213,6 +239,8 @@ export function SalesFormDialog({
 
   const resetForm = () => {
     onOpenChange(false);
+    setCustomerMode('existing');
+    setSelectedCustomer(null);
     setCustomerInfo({
       customerType: 'person',
       companyName: '',
@@ -265,101 +293,133 @@ export function SalesFormDialog({
                 <Label className="text-base font-medium">{t('sales.customerInfo')}</Label>
               </div>
               
-              {/* Customer Type Selector */}
-              <RadioGroup
-                value={customerInfo.customerType}
-                onValueChange={(value: 'person' | 'company') => 
-                  setCustomerInfo({ ...customerInfo, customerType: value })
+              <Tabs value={customerMode} onValueChange={(v) => {
+                setCustomerMode(v as 'existing' | 'new');
+                if (v === 'new') {
+                  setSelectedCustomer(null);
                 }
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="person" id="sale-person" />
-                  <Label htmlFor="sale-person" className="flex items-center gap-1 cursor-pointer">
-                    <User className="h-4 w-4" />
-                    {t('customers.person')}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="company" id="sale-company" />
-                  <Label htmlFor="sale-company" className="flex items-center gap-1 cursor-pointer">
-                    <Building2 className="h-4 w-4" />
-                    {t('customers.company')}
-                  </Label>
-                </div>
-              </RadioGroup>
-
-              <div className="grid grid-cols-2 gap-3">
-                {customerInfo.customerType === 'company' ? (
-                  <>
-                    {/* Company Fields */}
-                    <div className="space-y-2 col-span-2">
-                      <Label className="text-sm">{t('customers.companyName')}</Label>
-                      <Input
-                        value={customerInfo.companyName}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, companyName: e.target.value })}
-                        placeholder={t('customers.companyNamePlaceholder')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">{t('customers.taxId')}</Label>
-                      <Input
-                        value={customerInfo.taxId}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, taxId: e.target.value })}
-                        placeholder={t('customers.taxIdPlaceholder')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">{t('customers.contactPerson')}</Label>
-                      <Input
-                        value={customerInfo.contactPerson}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, contactPerson: e.target.value })}
-                        placeholder={t('customers.contactPersonPlaceholder')}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Person Fields */}
-                    <div className="space-y-2">
-                      <Label className="text-sm">{t('sales.firstName')}</Label>
-                      <Input
-                        value={customerInfo.firstName}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
-                        placeholder={t('sales.firstNamePlaceholder')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">{t('sales.lastName')}</Label>
-                      <Input
-                        value={customerInfo.lastName}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
-                        placeholder={t('sales.lastNamePlaceholder')}
-                      />
-                    </div>
-                  </>
-                )}
+              }}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="existing">{t('sales.existingCustomer')}</TabsTrigger>
+                  <TabsTrigger value="new">{t('sales.newCustomer')}</TabsTrigger>
+                </TabsList>
                 
-                {/* Common Fields */}
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('sales.email')}</Label>
-                  <Input
-                    type="email"
-                    value={customerInfo.email}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                    placeholder={t('sales.emailPlaceholder')}
+                <TabsContent value="existing" className="mt-4">
+                  <CustomerSelector
+                    customers={customers}
+                    selectedCustomer={selectedCustomer}
+                    onSelect={(customer) => {
+                      setSelectedCustomer(customer);
+                      if (customer) {
+                        // Pre-fill email for receipt sending
+                        setCustomerInfo(prev => ({
+                          ...prev,
+                          email: customer.email || '',
+                          phone: customer.phone || '',
+                        }));
+                      }
+                    }}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('sales.phone')}</Label>
-                  <Input
-                    type="tel"
-                    value={customerInfo.phone}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                    placeholder={t('sales.phonePlaceholder')}
-                  />
-                </div>
-              </div>
+                </TabsContent>
+                
+                <TabsContent value="new" className="mt-4 space-y-4">
+                  {/* Customer Type Selector */}
+                  <RadioGroup
+                    value={customerInfo.customerType}
+                    onValueChange={(value: 'person' | 'company') => 
+                      setCustomerInfo({ ...customerInfo, customerType: value })
+                    }
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="person" id="sale-person" />
+                      <Label htmlFor="sale-person" className="flex items-center gap-1 cursor-pointer">
+                        <User className="h-4 w-4" />
+                        {t('customers.person')}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="company" id="sale-company" />
+                      <Label htmlFor="sale-company" className="flex items-center gap-1 cursor-pointer">
+                        <Building2 className="h-4 w-4" />
+                        {t('customers.company')}
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {customerInfo.customerType === 'company' ? (
+                      <>
+                        {/* Company Fields */}
+                        <div className="space-y-2 col-span-2">
+                          <Label className="text-sm">{t('customers.companyName')}</Label>
+                          <Input
+                            value={customerInfo.companyName}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, companyName: e.target.value })}
+                            placeholder={t('customers.companyNamePlaceholder')}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">{t('customers.taxId')}</Label>
+                          <Input
+                            value={customerInfo.taxId}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, taxId: e.target.value })}
+                            placeholder={t('customers.taxIdPlaceholder')}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">{t('customers.contactPerson')}</Label>
+                          <Input
+                            value={customerInfo.contactPerson}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, contactPerson: e.target.value })}
+                            placeholder={t('customers.contactPersonPlaceholder')}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Person Fields */}
+                        <div className="space-y-2">
+                          <Label className="text-sm">{t('sales.firstName')}</Label>
+                          <Input
+                            value={customerInfo.firstName}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
+                            placeholder={t('sales.firstNamePlaceholder')}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">{t('sales.lastName')}</Label>
+                          <Input
+                            value={customerInfo.lastName}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
+                            placeholder={t('sales.lastNamePlaceholder')}
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Common Fields */}
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('sales.email')}</Label>
+                      <Input
+                        type="email"
+                        value={customerInfo.email}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                        placeholder={t('sales.emailPlaceholder')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('sales.phone')}</Label>
+                      <Input
+                        type="tel"
+                        value={customerInfo.phone}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                        placeholder={t('sales.phonePlaceholder')}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
             <Separator />
@@ -470,17 +530,17 @@ export function SalesFormDialog({
                 id="sendReceiptEmail"
                 checked={sendReceiptEmail}
                 onCheckedChange={(checked) => setSendReceiptEmail(checked === true)}
-                disabled={!customerInfo.email}
+                disabled={!getEmailForReceipt()}
               />
               <Label 
                 htmlFor="sendReceiptEmail" 
-                className={`flex items-center gap-2 text-sm cursor-pointer ${!customerInfo.email ? 'text-muted-foreground' : ''}`}
+                className={`flex items-center gap-2 text-sm cursor-pointer ${!getEmailForReceipt() ? 'text-muted-foreground' : ''}`}
               >
                 <Mail className="h-4 w-4" />
                 {t('sales.sendReceiptEmail')}
               </Label>
             </div>
-            {sendReceiptEmail && !customerInfo.email && (
+            {sendReceiptEmail && !getEmailForReceipt() && (
               <p className="text-xs text-destructive">{t('sales.emailRequired')}</p>
             )}
 
