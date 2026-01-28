@@ -17,11 +17,19 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tables } from '@/integrations/supabase/types';
+import { useProductCategories } from '@/hooks/useProductCategories';
 
 type Product = Tables<'products'>;
 
@@ -35,6 +43,7 @@ const productSchema = z.object({
   description: z.string().max(500).optional(),
   sku: z.string().max(50).optional(),
   barcode: z.string().max(50).optional(),
+  category_id: z.string().optional().nullable(),
   cost: z.coerce.number().min(0),
   price: z.coerce.number().min(0),
   quantity: z.coerce.number().min(0),
@@ -64,6 +73,7 @@ export function ProductForm({
   isLoading,
 }: ProductFormProps) {
   const { t } = useTranslation();
+  const { categories } = useProductCategories();
   const isEdit = !!product;
 
   const parseCustomFields = (fields: unknown): Array<{ name: string; value: string }> => {
@@ -83,6 +93,7 @@ export function ProductForm({
       description: product?.description || '',
       sku: product?.sku || '',
       barcode: product?.barcode || '',
+      category_id: product?.category_id || null,
       cost: product?.cost ? Number(product.cost) : 0,
       price: product?.price ? Number(product.price) : 0,
       quantity: product?.quantity ?? 0,
@@ -158,6 +169,34 @@ export function ProductForm({
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>{t('products.category')}</FormLabel>
+                    <Select
+                      value={field.value || ''}
+                      onValueChange={(value) => field.onChange(value || null)}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('products.selectCategory')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
