@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { Plus, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,11 @@ import { Tables } from '@/integrations/supabase/types';
 
 type Product = Tables<'products'>;
 
+const customFieldSchema = z.object({
+  name: z.string().min(1, 'Field name is required'),
+  value: z.string(),
+});
+
 const productSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
@@ -31,11 +37,13 @@ const productSchema = z.object({
   barcode: z.string().max(50).optional(),
   cost: z.coerce.number().min(0),
   price: z.coerce.number().min(0),
+  quantity: z.coerce.number().min(0),
   tax_rate: z.coerce.number().min(0).max(100),
   size: z.string().max(50).optional(),
   min_stock: z.coerce.number().min(0).optional(),
   has_serial_tracking: z.boolean().optional(),
   is_active: z.boolean().optional(),
+  custom_fields: z.array(customFieldSchema).optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -58,6 +66,16 @@ export function ProductForm({
   const { t } = useTranslation();
   const isEdit = !!product;
 
+  const parseCustomFields = (fields: unknown): Array<{ name: string; value: string }> => {
+    if (Array.isArray(fields)) {
+      return fields.filter(
+        (f): f is { name: string; value: string } =>
+          typeof f === 'object' && f !== null && 'name' in f && 'value' in f
+      );
+    }
+    return [];
+  };
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -67,18 +85,29 @@ export function ProductForm({
       barcode: product?.barcode || '',
       cost: product?.cost ? Number(product.cost) : 0,
       price: product?.price ? Number(product.price) : 0,
+      quantity: product?.quantity ?? 0,
       tax_rate: product?.tax_rate ? Number(product.tax_rate) : 0,
       size: product?.size || '',
       min_stock: product?.min_stock || 0,
       has_serial_tracking: product?.has_serial_tracking || false,
       is_active: product?.is_active ?? true,
+      custom_fields: parseCustomFields(product?.custom_fields),
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'custom_fields',
   });
 
   const handleSubmit = async (data: ProductFormValues) => {
     await onSubmit(data);
     form.reset();
     onOpenChange(false);
+  };
+
+  const addCustomField = () => {
+    append({ name: '', value: '' });
   };
 
   return (
@@ -128,6 +157,20 @@ export function ProductForm({
                     <FormLabel>{t('products.barcode')}</FormLabel>
                     <FormControl>
                       <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('products.quantity')} *</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -249,6 +292,74 @@ export function ProductForm({
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Custom Fields Section */}
+            <div className="border-t pt-4 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-sm">{t('products.customFields')}</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addCustomField}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  {t('products.addField')}
+                </Button>
+              </div>
+              
+              {fields.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t('products.noCustomFields')}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2 items-start">
+                      <FormField
+                        control={form.control}
+                        name={`custom_fields.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input 
+                                placeholder={t('products.fieldName')} 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`custom_fields.${index}.value`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input 
+                                placeholder={t('products.fieldValue')} 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-4">

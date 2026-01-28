@@ -165,6 +165,7 @@ export type Database = {
           barcode: string | null
           cost: number
           created_at: string
+          custom_fields: Json | null
           description: string | null
           has_serial_tracking: boolean | null
           id: string
@@ -172,6 +173,7 @@ export type Database = {
           min_stock: number | null
           name: string
           price: number
+          quantity: number
           size: string | null
           sku: string | null
           tax_rate: number
@@ -182,6 +184,7 @@ export type Database = {
           barcode?: string | null
           cost?: number
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
           has_serial_tracking?: boolean | null
           id?: string
@@ -189,6 +192,7 @@ export type Database = {
           min_stock?: number | null
           name: string
           price?: number
+          quantity?: number
           size?: string | null
           sku?: string | null
           tax_rate?: number
@@ -199,6 +203,7 @@ export type Database = {
           barcode?: string | null
           cost?: number
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
           has_serial_tracking?: boolean | null
           id?: string
@@ -206,6 +211,7 @@ export type Database = {
           min_stock?: number | null
           name?: string
           price?: number
+          quantity?: number
           size?: string | null
           sku?: string | null
           tax_rate?: number

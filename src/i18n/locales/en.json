@@ -91,6 +91,7 @@
     "description": "Description",
     "sku": "SKU",
     "barcode": "Barcode",
+    "quantity": "Quantity",
     "cost": "Cost",
     "price": "Price",
     "taxRate": "Tax Rate",
@@ -105,7 +106,12 @@
     "emptyDescription": "Get started by adding your first product",
     "created": "Product created successfully",
     "updated": "Product updated successfully",
-    "deleted": "Product deleted successfully"
+    "deleted": "Product deleted successfully",
+    "customFields": "Custom Fields",
+    "addField": "Add Field",
+    "noCustomFields": "No custom fields added. Add fields like brand, model, specs, etc.",
+    "fieldName": "Field name (e.g., Brand)",
+    "fieldValue": "Value"
   },
   "inventory": {
     "title": "Inventory",

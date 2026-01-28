@@ -88,8 +88,10 @@
     "add": "Agregar Producto",
     "edit": "Editar Producto",
     "name": "Nombre del Producto",
+    "description": "Descripción",
     "sku": "SKU",
     "barcode": "Código de Barras",
+    "quantity": "Cantidad",
     "cost": "Costo",
     "price": "Precio",
     "taxRate": "Tasa de Impuesto",
@@ -104,7 +106,12 @@
     "emptyDescription": "Comienza agregando tu primer producto",
     "created": "Producto creado exitosamente",
     "updated": "Producto actualizado exitosamente",
-    "deleted": "Producto eliminado exitosamente"
+    "deleted": "Producto eliminado exitosamente",
+    "customFields": "Campos Personalizados",
+    "addField": "Agregar Campo",
+    "noCustomFields": "Sin campos personalizados. Agrega campos como marca, modelo, especificaciones, etc.",
+    "fieldName": "Nombre del campo (ej: Marca)",
+    "fieldValue": "Valor"
   },
   "inventory": {
     "title": "Inventario",
