@@ -205,6 +205,7 @@ export type Database = {
           description: string | null
           has_serial_tracking: boolean | null
           id: string
+          image_url: string | null
           is_active: boolean | null
           min_stock: number | null
           name: string
@@ -225,6 +226,7 @@ export type Database = {
           description?: string | null
           has_serial_tracking?: boolean | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           min_stock?: number | null
           name: string
@@ -245,6 +247,7 @@ export type Database = {
           description?: string | null
           has_serial_tracking?: boolean | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           min_stock?: number | null
           name?: string

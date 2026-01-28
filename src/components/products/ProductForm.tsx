@@ -44,6 +44,7 @@ const productSchema = z.object({
   sku: z.string().max(50).optional(),
   barcode: z.string().max(50).optional(),
   category_id: z.string().optional().nullable(),
+  image_url: z.string().url().optional().or(z.literal('')),
   cost: z.coerce.number().min(0),
   price: z.coerce.number().min(0),
   quantity: z.coerce.number().min(0),
@@ -94,6 +95,7 @@ export function ProductForm({
       sku: product?.sku || '',
       barcode: product?.barcode || '',
       category_id: product?.category_id || null,
+      image_url: (product as any)?.image_url || '',
       cost: product?.cost ? Number(product.cost) : 0,
       price: product?.price ? Number(product.price) : 0,
       quantity: product?.quantity ?? 0,
@@ -178,7 +180,7 @@ export function ProductForm({
                 control={form.control}
                 name="category_id"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
+                  <FormItem>
                     <FormLabel>{t('products.category')}</FormLabel>
                     <Select
                       value={field.value || ''}
@@ -197,6 +199,20 @@ export function ProductForm({
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="image_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('products.imageUrl')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://..." {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
