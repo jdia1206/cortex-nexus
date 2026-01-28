@@ -22,6 +22,7 @@ export default function Products() {
   const columns: Column<Product>[] = [
     { key: 'name', header: t('products.name') },
     { key: 'sku', header: t('products.sku') },
+    { key: 'quantity', header: t('products.quantity') },
     { 
       key: 'cost', 
       header: t('products.cost'),
@@ -31,11 +32,6 @@ export default function Products() {
       key: 'price', 
       header: t('products.price'),
       render: (product) => `$${Number(product.price).toFixed(2)}`,
-    },
-    { 
-      key: 'tax_rate', 
-      header: t('products.taxRate'),
-      render: (product) => `${Number(product.tax_rate)}%`,
     },
     { 
       key: 'is_active', 
