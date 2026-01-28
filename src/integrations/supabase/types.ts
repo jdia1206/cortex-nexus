@@ -64,8 +64,11 @@ export type Database = {
           city: string | null
           contact_person: string | null
           created_at: string
+          customer_type: string
           email: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
           name: string
           phone: string | null
           tax_id: string | null
@@ -77,8 +80,11 @@ export type Database = {
           city?: string | null
           contact_person?: string | null
           created_at?: string
+          customer_type?: string
           email?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name: string
           phone?: string | null
           tax_id?: string | null
@@ -90,8 +96,11 @@ export type Database = {
           city?: string | null
           contact_person?: string | null
           created_at?: string
+          customer_type?: string
           email?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name?: string
           phone?: string | null
           tax_id?: string | null
