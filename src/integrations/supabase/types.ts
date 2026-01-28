@@ -699,6 +699,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_user_to_tenant: {
+        Args: {
+          p_full_name: string
+          p_role?: Database["public"]["Enums"]["app_role"]
+          p_tenant_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      create_tenant_with_admin: {
+        Args: { p_full_name: string; p_tenant_name: string; p_user_id: string }
+        Returns: string
+      }
       get_user_tenant_id: { Args: never; Returns: string }
       has_role_in_tenant: {
         Args: {
