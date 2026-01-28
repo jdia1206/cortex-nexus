@@ -1,87 +1,148 @@
 
 
-# Plan: Send PDF Receipt via Email
+# Plan: Apply Sales Structure to Purchases
 
 ## Overview
-This feature will allow you to send a professional PDF receipt to customers via email after completing a sale. Since emails cannot be sent from the browser, we'll create a backend function to handle PDF generation and email delivery.
+This plan will refactor the Purchases page to match the modern, polished structure of the Sales page. The key improvements include creating a dedicated dialog component, adding a visual product catalog, auto-generating purchase order numbers, proper currency formatting, and a supplier info section similar to customer info in Sales.
 
-## What You'll Need First
+## What Will Change
 
-**Email Service Setup (Resend)**
-1. Go to [resend.com](https://resend.com) and create a free account
-2. Verify your email domain at [resend.com/domains](https://resend.com/domains) (required for sending emails)
-3. Create an API key at [resend.com/api-keys](https://resend.com/api-keys)
-4. Provide the API key when prompted
+### 1. Create `PurchasesFormDialog` Component
+A new component `src/components/purchases/PurchasesFormDialog.tsx` that mirrors `SalesFormDialog`:
 
-## How It Will Work
+| Feature | Current (Purchases) | New (Matching Sales) |
+|---------|---------------------|----------------------|
+| Form location | Inline in page | Dedicated dialog component |
+| PO number | Manual input | Auto-generated (PO-YYMMDD-XXXX) |
+| Product selection | Dropdown per line | Visual ProductCatalog with cards |
+| Currency display | Hardcoded `$` | `formatCurrency()` from context |
+| Layout | Single column | Two-column (supplier/catalog + cart/summary) |
+| Supplier info | Just dropdown | Dropdown + shows selected supplier details |
+
+### 2. Create `PurchaseProductCatalog` Component
+A new component `src/components/purchases/PurchaseProductCatalog.tsx` similar to `ProductCatalog`:
+- Visual grid of product cards with search
+- Shows product name, SKU, and **cost** (instead of price)
+- Plus/minus buttons for quantity selection
+- Highlights selected products
+
+### 3. Refactor `Purchases.tsx` Page
+Simplify the page by:
+- Moving all form logic to `PurchasesFormDialog`
+- Removing inline state management for form fields
+- Adding `formatCurrency` for table display
+- Matching the clean structure of `Sales.tsx`
+
+### 4. Add Translation Keys
+New keys for purchases in `en.json` and `es.json`:
+- `purchases.newPurchase` - Dialog title
+- `purchases.purchaseOrderNumber` - PO number label
+- `purchases.supplierInfo` - Supplier section header
+- `purchases.selectProducts` - Product selection label
+- `purchases.searchProducts` - Search placeholder
+- `purchases.noProductsFound` - Empty search state
+- `purchases.cart` - Cart section header
+- `purchases.emptyCart` - Empty cart message
+- `purchases.completePurchase` - Submit button text
+- `purchases.notesPlaceholder` - Notes placeholder
+
+## New Component Structure
 
 ```text
-+-------------------+     +------------------+     +---------------+
-|   Complete Sale   | --> | Backend Function | --> | Customer Gets |
-| (Click "Send      |     | - Generate PDF   |     | Email with    |
-|  Receipt Email")  |     | - Send via Email |     | PDF Attached  |
-+-------------------+     +------------------+     +---------------+
+src/components/purchases/
+  ├── PurchasesFormDialog.tsx    (new - main dialog)
+  └── PurchaseProductCatalog.tsx (new - product grid)
 ```
 
-## Changes to Be Made
+## UI Layout (PurchasesFormDialog)
 
-### 1. Backend Function: `send-receipt-email`
-Create a new backend function that:
-- Receives sale data (receipt number, items, totals, customer info, company info)
-- Generates a professional PDF receipt using a library like `jsPDF`
-- Sends the email with the PDF attached using Resend
-- Returns success/failure status
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ New Purchase                                                 │
+├─────────────────────────────┬───────────────────────────────┤
+│ Left Column                 │ Right Column                  │
+│                             │                               │
+│ ┌─────────────────────────┐ │ ┌───────────────────────────┐ │
+│ │ PO # (auto-generated)   │ │ │ Cart (X items)            │ │
+│ └─────────────────────────┘ │ │ ┌───────────────────────┐ │ │
+│                             │ │ │ Product 1    $50.00   │ │ │
+│ ┌─────────────────────────┐ │ │ │ 2 x $25.00      [X]   │ │ │
+│ │ Supplier [Dropdown]     │ │ │ └───────────────────────┘ │ │
+│ └─────────────────────────┘ │ │ ┌───────────────────────┐ │ │
+│                             │ │ │ Product 2    $30.00   │ │ │
+│ ┌─────────────────────────┐ │ │ │ 1 x $30.00      [X]   │ │ │
+│ │ Warehouse [Dropdown]    │ │ │ └───────────────────────┘ │ │
+│ └─────────────────────────┘ │ └───────────────────────────┘ │
+│                             │                               │
+│ ─────────────────────────── │ ┌───────────────────────────┐ │
+│                             │ │ Notes                     │ │
+│ ┌─────────────────────────┐ │ │ [___________________]    │ │
+│ │ Product Catalog         │ │ └───────────────────────────┘ │
+│ │ [Search products...]    │ │                               │
+│ │ ┌─────────┐┌─────────┐  │ │ ┌───────────────────────────┐ │
+│ │ │Product 1││Product 2│  │ │ │ Subtotal:        $80.00  │ │
+│ │ │$25 cost ││$30 cost │  │ │ │ Total:           $80.00  │ │
+│ │ │[- 2 +]  ││[- 1 +]  │  │ │ └───────────────────────────┘ │
+│ │ └─────────┘└─────────┘  │ │                               │
+│ │ ┌─────────┐┌─────────┐  │ │ ┌───────────────────────────┐ │
+│ │ │Product 3││Product 4│  │ │ │ [Cancel] [Complete Order] │ │
+│ │ └─────────┘└─────────┘  │ │ └───────────────────────────┘ │
+│ └─────────────────────────┘ │                               │
+└─────────────────────────────┴───────────────────────────────┘
+```
 
-### 2. Update Sales Form Dialog
-- Add a "Send receipt to email" checkbox (enabled when email is provided)
-- After successful sale creation, call the backend function if checkbox is checked
-- Show a toast notification confirming the email was sent
+## Files to Create/Modify
 
-### 3. Add "Resend Receipt" Option
-- Add a button on existing sales to resend the receipt email
-- Opens a dialog to enter/confirm the email address
-- Calls the same backend function
-
-### 4. Receipt PDF Contents
-The PDF will include:
-- Company name, logo (if available), and contact info from your tenant settings
-- Receipt number and date
-- Customer name and contact details
-- Itemized list of products with quantities, unit prices, and subtotals
-- Tax breakdown
-- Discount (if applied)
-- Total amount
-- Currency formatting based on your selected currency
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/purchases/PurchasesFormDialog.tsx` | Create | Main dialog with two-column layout, supplier/warehouse dropdowns, product catalog, cart, and totals |
+| `src/components/purchases/PurchaseProductCatalog.tsx` | Create | Visual product grid showing cost, with quantity selectors |
+| `src/pages/Purchases.tsx` | Modify | Simplify to use new dialog, add currency formatting to table |
+| `src/i18n/locales/en.json` | Modify | Add new purchases translation keys |
+| `src/i18n/locales/es.json` | Modify | Add Spanish translations for new keys |
 
 ## Technical Details
 
-### Backend Function Structure
-```text
-supabase/functions/send-receipt-email/
-  └── index.ts
+### Auto-generated PO Number
+```typescript
+function generatePONumber(count: number): string {
+  const date = new Date();
+  const year = date.getFullYear().toString().slice(-2);
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const sequence = (count + 1).toString().padStart(4, '0');
+  return `PO-${year}${month}${day}-${sequence}`;
+}
 ```
 
-The function will:
-1. Validate input data
-2. Generate PDF in-memory using Deno-compatible PDF library
-3. Send email via Resend API with PDF as base64 attachment
-4. Handle errors gracefully
+### Currency Formatting in Table
+Change from:
+```typescript
+render: (purchase) => `$${Number(purchase.total).toFixed(2)}`
+```
+To:
+```typescript
+render: (purchase) => formatCurrency(Number(purchase.total))
+```
 
-### New UI Elements
-- Checkbox: "Send receipt to customer's email"
-- Button: "Resend Receipt" in sales list
-- Loading states during email sending
-- Success/error toast notifications
+### Product Selection Types
+```typescript
+type SelectedProduct = {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_cost: number;  // Using cost instead of price for purchases
+  subtotal: number;
+};
+```
 
-### New Translation Keys
-- `sales.sendReceiptEmail`
-- `sales.sendingReceipt`
-- `sales.receiptSent`
-- `sales.receiptSendError`
-- `sales.resendReceipt`
+## Key Differences from Sales
 
-## Security Considerations
-- The Resend API key will be stored securely as a secret
-- Email sending only works for authenticated users
-- Rate limiting can be added if needed
+| Aspect | Sales | Purchases |
+|--------|-------|-----------|
+| Number prefix | RCP- (Receipt) | PO- (Purchase Order) |
+| Partner | Customer (optional inline fields) | Supplier (dropdown) |
+| Location | Branch (optional) | Warehouse (dropdown) |
+| Product price field | `price` (selling price) | `cost` (purchase cost) |
+| Email feature | Send receipt | Not included (future enhancement) |
 
