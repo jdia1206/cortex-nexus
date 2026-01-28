@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ShoppingCart,
   ShoppingBag,
@@ -19,14 +20,21 @@ const statsCards = [
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const { profile, tenant, signOut } = useAuth();
 
   return (
-    <AppLayout companyName="Demo Company" userName="Admin User">
+    <AppLayout 
+      companyName={tenant?.name} 
+      userName={profile?.full_name}
+      onLogout={signOut}
+    >
       <div className="space-y-6">
         {/* Welcome Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t('dashboard.title')}</h1>
-          <p className="text-muted-foreground">{t('dashboard.welcome')}</p>
+          <p className="text-muted-foreground">
+            {t('dashboard.welcome')}, {profile?.full_name}!
+          </p>
         </div>
 
         {/* Stats Cards */}

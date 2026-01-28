@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/contexts/AuthContext';
 import { Globe, Eye, EyeOff, Building2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentLanguage, changeLanguage, languages } = useLanguage();
+  const { signUp, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,6 +31,12 @@ export default function Register() {
   });
   const [error, setError] = useState('');
 
+  // Redirect if already logged in
+  if (user) {
+    navigate('/dashboard', { replace: true });
+    return null;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -38,13 +46,26 @@ export default function Register() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: Implement actual registration with Supabase
-    setTimeout(() => {
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      formData.companyName,
+      formData.fullName
+    );
+
+    if (error) {
+      setError(error.message);
       setIsLoading(false);
+    } else {
       navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   return (
@@ -141,7 +162,7 @@ export default function Register() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
-                  minLength={8}
+                  minLength={6}
                 />
                 <Button
                   type="button"

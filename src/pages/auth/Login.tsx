@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/contexts/AuthContext';
 import { Globe, Eye, EyeOff } from 'lucide-react';
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentLanguage, changeLanguage, languages } = useLanguage();
+  const { signIn, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,16 +28,25 @@ export default function Login() {
   });
   const [error, setError] = useState('');
 
+  // Redirect if already logged in
+  if (user) {
+    navigate('/dashboard', { replace: true });
+    return null;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // TODO: Implement actual login with Supabase
-    setTimeout(() => {
+    const { error } = await signIn(formData.email, formData.password);
+
+    if (error) {
+      setError(t('auth.invalidCredentials'));
       setIsLoading(false);
+    } else {
       navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   return (
