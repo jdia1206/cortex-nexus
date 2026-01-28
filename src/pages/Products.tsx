@@ -4,7 +4,9 @@ import { AppLayout } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, DataTable, DeleteDialog, Column } from '@/components/shared';
 import { useProducts } from '@/hooks/useProducts';
+import { useProductCategories } from '@/hooks/useProductCategories';
 import { ProductForm } from '@/components/products/ProductForm';
+import { CategoryManager } from '@/components/products/CategoryManager';
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -14,6 +16,13 @@ export default function Products() {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
   const { products, isLoading, create, update, delete: deleteProduct, isCreating, isUpdating, isDeleting } = useProducts();
+  const { categories } = useProductCategories();
+
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return '-';
+    const category = categories.find(c => c.id === categoryId);
+    return category?.name || '-';
+  };
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -22,6 +31,11 @@ export default function Products() {
   const columns: Column<Product>[] = [
     { key: 'name', header: t('products.name') },
     { key: 'sku', header: t('products.sku') },
+    { 
+      key: 'category_id', 
+      header: t('products.category'),
+      render: (product) => getCategoryName(product.category_id),
+    },
     { key: 'quantity', header: t('products.quantity') },
     { 
       key: 'cost', 
@@ -78,15 +92,18 @@ export default function Products() {
       onLogout={signOut}
     >
       <div className="space-y-6">
-        <PageHeader
-          title={t('products.title')}
-          description={t('products.description')}
-          actionLabel={t('products.add')}
-          onAction={() => {
-            setSelectedProduct(null);
-            setFormOpen(true);
-          }}
-        />
+        <div className="flex items-center justify-between">
+          <PageHeader
+            title={t('products.title')}
+            description={t('products.description')}
+            actionLabel={t('products.add')}
+            onAction={() => {
+              setSelectedProduct(null);
+              setFormOpen(true);
+            }}
+          />
+          <CategoryManager />
+        </div>
 
         <DataTable
           data={products}

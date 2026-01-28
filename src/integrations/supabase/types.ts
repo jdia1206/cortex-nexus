@@ -160,9 +160,45 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null
+          category_id: string | null
           cost: number
           created_at: string
           custom_fields: Json | null
@@ -182,6 +218,7 @@ export type Database = {
         }
         Insert: {
           barcode?: string | null
+          category_id?: string | null
           cost?: number
           created_at?: string
           custom_fields?: Json | null
@@ -201,6 +238,7 @@ export type Database = {
         }
         Update: {
           barcode?: string | null
+          category_id?: string | null
           cost?: number
           created_at?: string
           custom_fields?: Json | null
@@ -219,6 +257,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_tenant_id_fkey"
             columns: ["tenant_id"]

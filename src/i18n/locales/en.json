@@ -91,6 +91,8 @@
     "description": "Description",
     "sku": "SKU",
     "barcode": "Barcode",
+    "category": "Category",
+    "selectCategory": "Select a category",
     "quantity": "Quantity",
     "cost": "Cost",
     "price": "Price",
@@ -112,6 +114,20 @@
     "noCustomFields": "No custom fields added. Add fields like brand, model, specs, etc.",
     "fieldName": "Field name (e.g., Brand)",
     "fieldValue": "Value"
+  },
+  "categories": {
+    "title": "Product Categories",
+    "manage": "Categories",
+    "add": "Add Category",
+    "edit": "Edit Category",
+    "name": "Category Name",
+    "namePlaceholder": "e.g., Computers, Tablets, Phones",
+    "description": "Description",
+    "empty": "No categories yet",
+    "emptyDescription": "Create categories to organize your products",
+    "created": "Category created successfully",
+    "updated": "Category updated successfully",
+    "deleted": "Category deleted successfully"
   },
   "inventory": {
     "title": "Inventory",

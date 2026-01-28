@@ -91,6 +91,8 @@
     "description": "Descripción",
     "sku": "SKU",
     "barcode": "Código de Barras",
+    "category": "Categoría",
+    "selectCategory": "Selecciona una categoría",
     "quantity": "Cantidad",
     "cost": "Costo",
     "price": "Precio",
@@ -112,6 +114,20 @@
     "noCustomFields": "Sin campos personalizados. Agrega campos como marca, modelo, especificaciones, etc.",
     "fieldName": "Nombre del campo (ej: Marca)",
     "fieldValue": "Valor"
+  },
+  "categories": {
+    "title": "Categorías de Productos",
+    "manage": "Categorías",
+    "add": "Agregar Categoría",
+    "edit": "Editar Categoría",
+    "name": "Nombre de Categoría",
+    "namePlaceholder": "ej: Computadoras, Tablets, Teléfonos",
+    "description": "Descripción",
+    "empty": "No hay categorías aún",
+    "emptyDescription": "Crea categorías para organizar tus productos",
+    "created": "Categoría creada exitosamente",
+    "updated": "Categoría actualizada exitosamente",
+    "deleted": "Categoría eliminada exitosamente"
   },
   "inventory": {
     "title": "Inventario",
