@@ -198,7 +198,11 @@
     "receiptSendError": "Failed to send receipt email",
     "resendReceipt": "Resend Receipt",
     "enterEmail": "Enter email address",
-    "emailRequired": "Email is required to send receipt"
+    "emailRequired": "Email is required to send receipt",
+    "existingCustomer": "Existing Customer",
+    "newCustomer": "New Customer",
+    "searchCustomers": "Search customers by name, email, phone...",
+    "noCustomersFound": "No customers found"
   },
   "purchases": {
     "title": "Purchases",
@@ -269,6 +273,7 @@
     "cityPlaceholder": "e.g., New York",
     "contactPerson": "Contact Person",
     "contactPersonPlaceholder": "e.g., John Williams",
+    "noContact": "No contact info",
     "searchPlaceholder": "Search by name, tax ID or email...",
     "empty": "No customers yet",
     "emptyDescription": "Add your first customer to get started",

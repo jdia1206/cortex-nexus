@@ -198,7 +198,11 @@
     "receiptSendError": "Error al enviar el recibo",
     "resendReceipt": "Reenviar Recibo",
     "enterEmail": "Ingresa el correo electrónico",
-    "emailRequired": "El correo es requerido para enviar el recibo"
+    "emailRequired": "El correo es requerido para enviar el recibo",
+    "existingCustomer": "Cliente Existente",
+    "newCustomer": "Nuevo Cliente",
+    "searchCustomers": "Buscar clientes por nombre, correo, teléfono...",
+    "noCustomersFound": "No se encontraron clientes"
   },
   "purchases": {
     "title": "Compras",
@@ -269,6 +273,7 @@
     "cityPlaceholder": "ej: Madrid",
     "contactPerson": "Persona de Contacto",
     "contactPersonPlaceholder": "ej: Ana López",
+    "noContact": "Sin información de contacto",
     "searchPlaceholder": "Buscar por nombre, NIF o correo...",
     "empty": "No hay clientes aún",
     "emptyDescription": "Agrega tu primer cliente para comenzar",

@@ -6,6 +6,8 @@ import { PageHeader, DataTable, DeleteDialog, Column } from '@/components/shared
 import { useCustomers } from '@/hooks/useCustomers';
 import { CustomerForm } from '@/components/customers/CustomerForm';
 import { Tables } from '@/integrations/supabase/types';
+import { Badge } from '@/components/ui/badge';
+import { Building2, User } from 'lucide-react';
 
 type Customer = Tables<'customers'>;
 
@@ -19,7 +21,29 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const columns: Column<Customer>[] = [
-    { key: 'name', header: t('customers.name') },
+    { 
+      key: 'name', 
+      header: t('customers.name'),
+      render: (customer) => (
+        <div className="flex items-center gap-2">
+          {customer.customer_type === 'company' ? (
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <User className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{customer.name}</span>
+        </div>
+      ),
+    },
+    { 
+      key: 'customer_type', 
+      header: t('customers.customerType'),
+      render: (customer) => (
+        <Badge variant={customer.customer_type === 'company' ? 'default' : 'secondary'}>
+          {t(`customers.${customer.customer_type}`)}
+        </Badge>
+      ),
+    },
     { key: 'tax_id', header: t('customers.taxId') },
     { key: 'phone', header: t('customers.phone') },
     { key: 'email', header: t('customers.email') },
