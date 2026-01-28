@@ -1,157 +1,292 @@
 
 
-# VentaSaaS - Sales, Purchase & Inventory Management System
+# Phase 2 & 3: Build All VentaSaaS Modules
 
 ## Overview
-A multi-tenant SaaS application for managing sales, purchases, and inventory. Each company (tenant) gets isolated access to their own data using Row-Level Security, with Stripe integration for subscription billing.
+This plan covers the creation of all remaining modules for the VentaSaaS application. We will build 11 new pages with full CRUD functionality, reusable components, and React Query integration for data management.
 
 ---
 
-## 🏗️ Architecture
-
-### Multi-Tenancy Approach
-- **Single database** with RLS policies for complete data isolation
-- Each table includes a `tenant_id` column linked to the subscribing company
-- Users can only access data belonging to their company
-
-### Tech Stack
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Supabase (Database, Auth, Edge Functions)
-- **Payments**: Stripe (subscription billing)
-- **UI Style**: Enterprise/Business with sidebar navigation
+## Current State
+- Phase 1 Complete: Authentication, database schema with RLS, basic layout
+- Existing Pages: Login, Register, Dashboard
+- Database: All 13 tables created with RLS policies
+- i18n: English and Spanish translations ready
 
 ---
 
-## 📦 Core Modules
+## New Pages to Create
 
-### 1. Authentication & Onboarding
-- User registration with email/password
-- Company (tenant) creation during signup
-- Subscription selection via Stripe checkout
-- User invitation system (Admin invites team members)
+### Business Modules
+| Module | Route | Features |
+|--------|-------|----------|
+| Products | `/products` | List, Add, Edit, Delete products |
+| Inventory | `/inventory` | Stock levels by warehouse, adjustments |
+| Customers | `/customers` | Customer directory with CRUD |
+| Suppliers | `/suppliers` | Supplier directory with CRUD |
+| Sales | `/sales` | Invoice list, create new sale |
+| Purchases | `/purchases` | Invoice list, create new purchase |
 
-### 2. Company & Branches Management
-- Company profile settings (name, address, contact info, social media)
-- Multiple branches (sucursales) per company
-- Multiple warehouses (depósitos) per branch
-
-### 3. Product Catalog (Artículos)
-- Product management (name, description, size, cost, price, tax rate)
-- Optional serial number tracking per product
-- Product categories (future enhancement)
-
-### 4. Inventory Management
-- Stock levels per warehouse
-- Inventory adjustments with reason tracking
-- Stock transfers between warehouses
-- Low stock alerts
-
-### 5. Suppliers (Proveedores)
-- Supplier directory with contact information
-- Supplier representative tracking
-
-### 6. Customers (Clientes)
-- Customer database with contact details
-- Customer purchase history
-
-### 7. Purchase Module (Compras)
-- Purchase invoice creation
-- Supplier selection
-- Serial number capture for serialized products
-- Purchase returns (Devoluciones)
-- Purchase history and reporting
-
-### 8. Sales Module (Ventas)
-- Sales invoice creation
-- Customer selection
-- Serial number assignment for serialized products
-- Sales returns (Devoluciones)
-- Sales history and reporting
-
-### 9. User Roles & Permissions
-- **Admin**: Full access, user management, company settings
-- **User**: Day-to-day operations (sales, purchases, inventory)
+### Settings Modules
+| Module | Route | Features |
+|--------|-------|----------|
+| Company | `/settings/company` | Company profile settings |
+| Users | `/settings/users` | User management, role assignment |
+| Branches | `/settings/branches` | Branch management |
+| Warehouses | `/settings/warehouses` | Warehouse management |
+| Billing | `/settings/billing` | Subscription info (placeholder) |
 
 ---
 
-## 🌍 Internationalization (i18n)
-- Support for Spanish and English
-- Language switcher in the header
-- All labels, messages, and dates localized
+## Implementation Structure
+
+### 1. Shared Components
+Create reusable components in `src/components/shared/`:
+
+- **DataTable**: Generic table with sorting, pagination, search
+- **PageHeader**: Consistent page headers with title and action buttons
+- **DeleteDialog**: Confirmation dialog for delete actions
+- **FormDialog**: Modal for create/edit forms
+- **EmptyState**: Placeholder when no data exists
+
+### 2. Custom Hooks
+Create data hooks in `src/hooks/`:
+
+- **useProducts**: CRUD operations for products
+- **useCustomers**: CRUD operations for customers
+- **useSuppliers**: CRUD operations for suppliers
+- **useBranches**: CRUD operations for branches
+- **useWarehouses**: CRUD operations for warehouses
+- **useInventory**: Inventory queries and adjustments
+- **useSales**: Sales invoice operations
+- **usePurchases**: Purchase invoice operations
+
+### 3. Page Components
+Each page follows a consistent pattern:
+```text
++------------------------------------------+
+| PageHeader: Title + "Add New" Button     |
++------------------------------------------+
+| Search/Filter Bar                        |
++------------------------------------------+
+| DataTable with columns                   |
+| - Edit/Delete actions per row            |
++------------------------------------------+
+| Pagination                               |
++------------------------------------------+
+```
 
 ---
 
-## 💳 Stripe Subscription
-- Subscription plans for access to the system
-- Payment method management
-- Billing history
-- Subscription upgrade/downgrade
+## File Structure
+
+```text
+src/
+├── components/
+│   ├── shared/
+│   │   ├── DataTable.tsx
+│   │   ├── PageHeader.tsx
+│   │   ├── DeleteDialog.tsx
+│   │   └── EmptyState.tsx
+│   ├── products/
+│   │   └── ProductForm.tsx
+│   ├── customers/
+│   │   └── CustomerForm.tsx
+│   ├── suppliers/
+│   │   └── SupplierForm.tsx
+│   ├── sales/
+│   │   ├── SalesForm.tsx
+│   │   └── SalesItemRow.tsx
+│   ├── purchases/
+│   │   ├── PurchaseForm.tsx
+│   │   └── PurchaseItemRow.tsx
+│   └── settings/
+│       ├── BranchForm.tsx
+│       ├── WarehouseForm.tsx
+│       └── UserForm.tsx
+├── hooks/
+│   ├── useProducts.ts
+│   ├── useCustomers.ts
+│   ├── useSuppliers.ts
+│   ├── useBranches.ts
+│   ├── useWarehouses.ts
+│   ├── useInventory.ts
+│   ├── useSales.ts
+│   └── usePurchases.ts
+└── pages/
+    ├── Products.tsx
+    ├── Inventory.tsx
+    ├── Customers.tsx
+    ├── Suppliers.tsx
+    ├── Sales.tsx
+    ├── Purchases.tsx
+    └── settings/
+        ├── Company.tsx
+        ├── Users.tsx
+        ├── Branches.tsx
+        ├── Warehouses.tsx
+        └── Billing.tsx
+```
 
 ---
 
-## 🎨 User Interface
+## Detailed Module Specifications
 
-### Layout
-- **Sidebar navigation** with collapsible menu
-- **Header** with company name, user profile, language switcher
-- **Main content area** with tables, forms, and dashboards
+### Products Module (`/products`)
+**Features:**
+- Table columns: Name, SKU, Cost, Price, Tax Rate, Status, Actions
+- Add/Edit form with all product fields
+- Toggle active/inactive status
+- Search by name or SKU
 
-### Key Screens
-1. **Dashboard**: Overview of sales, purchases, inventory levels
-2. **Products**: Grid/table view with search and filters
-3. **Inventory**: Stock levels by warehouse
-4. **Sales**: Invoice list + create new sale
-5. **Purchases**: Invoice list + create new purchase
-6. **Customers/Suppliers**: Directory with search
-7. **Settings**: Company profile, users, branches, warehouses
-8. **Billing**: Subscription status, payment history
+**Form Fields:**
+- Name (required), Description, SKU, Barcode
+- Cost, Price, Tax Rate (%), Size
+- Serial Tracking toggle, Active toggle, Min Stock
+
+### Customers Module (`/customers`)
+**Features:**
+- Table columns: Name, Tax ID, Phone, Email, City, Actions
+- Add/Edit form with customer details
+- Search by name, tax ID, or email
+
+**Form Fields:**
+- Name (required), Tax ID, Contact Person
+- Phone, Email, Address, City
+
+### Suppliers Module (`/suppliers`)
+**Features:**
+- Table columns: Name, Tax ID, Phone, Email, Representative, Actions
+- Add/Edit form with supplier details
+- Search by name or tax ID
+
+**Form Fields:**
+- Name (required), Tax ID, Representative
+- Phone, Email, Address
+
+### Inventory Module (`/inventory`)
+**Features:**
+- Display stock levels grouped by warehouse
+- Filter by warehouse
+- Low stock alerts (items below min_stock)
+- Stock adjustment capability
+
+**Display:**
+- Product name, Warehouse, Current Quantity, Min Stock, Status
+
+### Sales Module (`/sales`)
+**Features:**
+- Invoice list with status badges
+- Create new sale with line items
+- Select customer, add products
+- Auto-calculate subtotal, tax, total
+- Invoice status management (pending/paid/cancelled)
+
+**Invoice Form:**
+- Customer selection, Invoice date
+- Line items: Product, Quantity, Unit Price, Tax
+- Notes, Discount
+
+### Purchases Module (`/purchases`)
+**Features:**
+- Invoice list with status badges
+- Create new purchase with line items
+- Select supplier and target warehouse
+- Auto-calculate totals
+
+**Invoice Form:**
+- Supplier selection, Warehouse, Invoice date
+- Line items: Product, Quantity, Unit Cost
+- Notes
+
+### Settings: Company (`/settings/company`)
+**Features:**
+- Edit company profile
+- Fields: Name, Tax ID, Email, Phone, Address, Website, Logo
+
+### Settings: Users (`/settings/users`)
+**Features:**
+- List team members with roles
+- Admin can invite new users (future)
+- Admin can change user roles
+- Admin can remove users
+
+### Settings: Branches (`/settings/branches`)
+**Features:**
+- List all branches
+- Add/Edit branches
+- Mark main branch
+
+### Settings: Warehouses (`/settings/warehouses`)
+**Features:**
+- List warehouses with associated branch
+- Add/Edit warehouses
+- Capacity tracking
+
+### Settings: Billing (`/settings/billing`)
+**Features:**
+- Placeholder for Stripe integration
+- Display subscription status
+- Payment history (future)
 
 ---
 
-## 🗄️ Database Schema (Adapted for Supabase)
+## Technical Details
 
-The schema will be redesigned with:
-- UUID primary keys (instead of composite keys)
-- `tenant_id` on all business tables
-- `created_at`, `updated_at` timestamps
-- Proper RLS policies for tenant isolation
-- Integration with Supabase Auth
+### React Query Pattern
+Each hook will follow this pattern:
+```typescript
+// Example: useProducts.ts
+export function useProducts() {
+  const { profile } = useAuth();
+  
+  const query = useQuery({
+    queryKey: ['products', profile?.tenant_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', profile?.tenant_id)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  const createMutation = useMutation({...});
+  const updateMutation = useMutation({...});
+  const deleteMutation = useMutation({...});
+
+  return { ...query, create, update, delete };
+}
+```
+
+### Tenant ID Injection
+All mutations will automatically inject the `tenant_id` from the auth context, ensuring proper RLS compliance.
+
+### Form Validation
+Use `react-hook-form` with `zod` schemas for validation on all forms.
 
 ---
 
-## 🚀 Implementation Phases
-
-### Phase 1: Foundation
-- Supabase setup with authentication
-- Multi-tenant database schema with RLS
-- Basic UI layout with sidebar navigation
-- Company and user management
-
-### Phase 2: Core Business Logic
-- Product catalog management
-- Supplier and customer directories
-- Branch and warehouse setup
-- Inventory tracking
-
-### Phase 3: Transactions
-- Purchase invoice creation and listing
-- Sales invoice creation and listing
-- Serial number tracking
-- Returns processing
-
-### Phase 4: Polish & Billing
-- Stripe subscription integration
-- Dashboard with key metrics
-- Internationalization (Spanish/English)
-- Reports and exports
+## Route Configuration
+Update `App.tsx` to include all new routes with ProtectedRoute wrapper.
 
 ---
 
-## ✅ Success Criteria
-- Complete data isolation between tenants
-- Intuitive enterprise-style interface
-- Working sales and purchase flows
-- Inventory accurately tracked across warehouses
-- Stripe payments functional
-- Multilingual support
+## Implementation Order
+
+1. **Shared Components** - DataTable, PageHeader, DeleteDialog, EmptyState
+2. **Data Hooks** - All useX hooks for data operations
+3. **Business Pages** - Products, Customers, Suppliers (foundational data)
+4. **Inventory Page** - Depends on Products and Warehouses
+5. **Settings Pages** - Company, Branches, Warehouses, Users, Billing
+6. **Transaction Pages** - Sales and Purchases (depends on all above)
+
+---
+
+## Estimated Changes
+- **New Files**: ~35 files (pages, components, hooks)
+- **Modified Files**: 2 (App.tsx for routes, potentially locale files)
 
