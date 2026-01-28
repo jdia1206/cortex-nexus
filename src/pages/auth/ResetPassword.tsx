@@ -6,8 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useAuth } from '@/contexts/AuthContext';
-import { Globe, Eye, EyeOff, CheckCircle, Lock } from 'lucide-react';
+import { Globe, Eye, EyeOff, CheckCircle, Lock, AlertCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +14,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+import { Progress } from '@/components/ui/progress';
+
+// Password strength validation
+const getPasswordStrength = (password: string): { score: number; feedback: string[] } => {
+  const feedback: string[] = [];
+  let score = 0;
+
+  if (password.length >= 8) score += 25;
+  else feedback.push('auth.passwordMinLength');
+
+  if (/[a-z]/.test(password)) score += 25;
+  else feedback.push('auth.passwordLowercase');
+
+  if (/[A-Z]/.test(password)) score += 25;
+  else feedback.push('auth.passwordUppercase');
+
+  if (/[0-9]/.test(password) || /[^a-zA-Z0-9]/.test(password)) score += 25;
+  else feedback.push('auth.passwordNumberOrSpecial');
+
+  return { score, feedback };
+};
 
 export default function ResetPassword() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentLanguage, changeLanguage, languages } = useLanguage();
-  const { updatePassword } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +51,8 @@ export default function ResetPassword() {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+
+  const passwordStrength = getPasswordStrength(formData.password);
 
   useEffect(() => {
     // Check if user has a valid recovery session
@@ -59,30 +80,43 @@ export default function ResetPassword() {
     e.preventDefault();
     setError('');
 
+    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError(t('auth.passwordMismatch'));
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError(t('auth.passwordTooShort'));
+    // Validate password strength (require at least 75% score)
+    if (passwordStrength.score < 75) {
+      setError(t('auth.passwordTooWeak'));
       return;
     }
 
     setIsLoading(true);
 
-    const { error } = await updatePassword(formData.password);
+    try {
+      // Update password - this only works for the authenticated user's own session
+      const { error } = await supabase.auth.updateUser({
+        password: formData.password,
+      });
 
-    if (error) {
-      setError(t('auth.resetPasswordError'));
-      setIsLoading(false);
-    } else {
+      if (error) throw error;
+
+      // Sign out immediately after password change for security
+      // This invalidates the recovery session and requires fresh login
+      await supabase.auth.signOut();
+
       setIsSuccess(true);
       setIsLoading(false);
+      
       // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
       }, 3000);
+    } catch (err) {
+      console.error('Password update error:', err);
+      setError(t('auth.resetPasswordError'));
+      setIsLoading(false);
     }
   };
 
@@ -184,6 +218,7 @@ export default function ResetPassword() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10 pr-10"
                     required
+                    autoComplete="new-password"
                   />
                   <Button
                     type="button"
@@ -199,6 +234,29 @@ export default function ResetPassword() {
                     )}
                   </Button>
                 </div>
+                {/* Password strength indicator */}
+                {formData.password && (
+                  <div className="space-y-2">
+                    <Progress 
+                      value={passwordStrength.score} 
+                      className={`h-2 ${
+                        passwordStrength.score < 50 ? '[&>div]:bg-destructive' : 
+                        passwordStrength.score < 75 ? '[&>div]:bg-yellow-500' : 
+                        '[&>div]:bg-green-500'
+                      }`}
+                    />
+                    {passwordStrength.feedback.length > 0 && (
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        {passwordStrength.feedback.map((key) => (
+                          <li key={key} className="flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {t(key)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
