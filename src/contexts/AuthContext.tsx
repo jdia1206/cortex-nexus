@@ -14,6 +14,12 @@ interface Profile {
 interface Tenant {
   id: string;
   name: string;
+  tax_id: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  website: string | null;
+  logo_url: string | null;
 }
 
 interface UserRole {
