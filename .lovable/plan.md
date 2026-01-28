@@ -1,95 +1,175 @@
 
 
-## Password Reset Feature Implementation
+## Super Admin Operations Center
 
-This plan implements a complete password reset flow so users can recover access to their accounts when they forget their passwords.
+This plan creates a centralized **Platform Operations Center** where you (as the platform owner) can manage all aspects of Nexus - from customer subscriptions to support tickets to platform analytics.
 
-### How It Works
+### What You'll Get
 
-1. **User clicks "Forgot Password?"** on the login page
-2. **User enters their email** on the forgot password page
-3. **System sends a reset email** with a secure link
-4. **User clicks the link** and is taken to a page to set a new password
-5. **User sets new password** and can log in again
+#### 1. Platform Dashboard
+A bird's-eye view of your entire SaaS business:
+- Total active tenants (companies using Nexus)
+- Monthly Recurring Revenue (MRR)
+- New signups this month
+- Active support tickets
+- Platform health indicators
 
-### What Will Be Created
+#### 2. Tenant Management
+Complete oversight of all companies on your platform:
+- List all tenants with search and filters
+- View tenant details (company info, users, usage stats)
+- See subscription status and plan type
+- Manually activate/deactivate accounts
+- Impersonate tenant for support (view their data)
 
-#### New Pages
-- **Forgot Password Page** (`/forgot-password`) - Where users enter their email to request a reset
-- **Reset Password Page** (`/reset-password`) - Where users set their new password after clicking the email link
+#### 3. Subscription & Billing Management
+Track and manage all subscriptions:
+- View active subscriptions with plan details
+- See payment history and failed payments
+- Manually upgrade/downgrade plans
+- Handle refunds and credits
+- Export billing reports
+- Integration with Stripe for payment processing
 
-#### Backend Function
-- **Password Reset Email Function** - Sends beautifully formatted password reset emails matching your app's branding
+#### 4. Support Ticketing System
+Built-in customer support:
+- Incoming ticket queue
+- Assign tickets to support agents
+- Ticket priority levels (low, medium, high, urgent)
+- Ticket categories (billing, technical, feature request)
+- Internal notes on tickets
+- Response templates
 
-#### Authentication Updates
-- Add password reset functions to the authentication system
-- Handle the secure token from email links
+#### 5. AI-Powered Support Assistant
+Use AI to enhance support:
+- Auto-suggest responses based on ticket content
+- Summarize long ticket threads
+- Categorize incoming tickets automatically
+- Generate knowledge base articles from common issues
+
+#### 6. User Analytics
+Understand how customers use Nexus:
+- Daily/weekly/monthly active users
+- Feature usage breakdown
+- Churn indicators
+- Engagement metrics
+
+#### 7. Platform Announcements
+Communicate with all users:
+- Create system-wide announcements
+- Schedule maintenance notices
+- Send targeted messages to specific plans
 
 ---
 
-### Technical Details
+### How It Works
 
-#### 1. Create Forgot Password Page
-**File:** `src/pages/auth/ForgotPassword.tsx`
+The Super Admin area will be completely separate from the tenant-level app. You'll access it through a special `/admin` route that only platform administrators can see.
 
-- Email input form with validation
-- Success message after email is sent
-- Link back to login page
-- Language switcher (consistent with login page)
-- Uses the built-in Supabase `resetPasswordForEmail` method
+**Security Model:**
+- A new `platform_roles` table tracks super admins
+- Super admins are NOT tenant admins - they're platform operators
+- All admin actions are logged for audit trails
+- Super admin routes are protected with additional security checks
 
-#### 2. Create Reset Password Page
-**File:** `src/pages/auth/ResetPassword.tsx`
+---
 
-- New password input with confirmation
-- Password visibility toggle (consistent with login)
-- Validates passwords match
-- Shows success message and redirects to login
-- Uses `updateUser` to set the new password
+### Technical Implementation
 
-#### 3. Update AuthContext
-**File:** `src/contexts/AuthContext.tsx`
+#### Database Changes
 
-Add two new methods:
-```text
-resetPassword(email) - Sends password reset email
-updatePassword(newPassword) - Sets the new password
-```
+**New Tables:**
 
-#### 4. Create Edge Function for Email
-**File:** `supabase/functions/send-password-reset/index.ts`
+| Table | Purpose |
+|-------|---------|
+| `platform_admins` | Users who can access the admin panel |
+| `subscriptions` | Track tenant subscription status and plans |
+| `subscription_plans` | Define available plans (Free, Pro, Enterprise) |
+| `support_tickets` | Customer support ticket system |
+| `ticket_messages` | Threaded messages on tickets |
+| `platform_announcements` | System-wide notifications |
+| `admin_audit_log` | Track all admin actions |
 
-- Uses existing RESEND_API_KEY (already configured)
-- Sends branded email matching your company style
-- Includes secure reset link with token
+#### New Pages
 
-#### 5. Update App Routes
-**File:** `src/App.tsx`
+| Route | Page |
+|-------|------|
+| `/admin` | Admin Dashboard Overview |
+| `/admin/tenants` | Tenant Management |
+| `/admin/tenants/:id` | Individual Tenant Details |
+| `/admin/subscriptions` | Subscription Management |
+| `/admin/support` | Support Ticket Queue |
+| `/admin/support/:id` | Individual Ticket View |
+| `/admin/analytics` | Platform Analytics |
+| `/admin/announcements` | Announcements Manager |
 
-Add routes:
-```text
-/forgot-password → ForgotPassword page
-/reset-password → ResetPassword page
-```
+#### New Components
 
-#### 6. Add Translations
-**Files:** `src/i18n/locales/en.json`, `src/i18n/locales/es.json`
+- `AdminLayout` - Separate layout for admin panel
+- `AdminSidebar` - Navigation for admin area
+- `TenantCard` - Display tenant info
+- `TicketList` - Support ticket queue
+- `TicketChat` - Ticket conversation view
+- `SubscriptionBadge` - Show plan status
+- `AIAssistantPanel` - AI support helper
 
-New translation keys for:
-- Page titles and descriptions
-- Form labels and buttons
-- Success/error messages
-- Email content
+#### Backend Functions
+
+| Function | Purpose |
+|----------|---------|
+| `admin-dashboard-stats` | Aggregate platform metrics |
+| `admin-impersonate` | Safe tenant impersonation |
+| `ai-ticket-assistant` | AI-powered support suggestions |
+| `subscription-webhook` | Handle Stripe events |
+
+#### Stripe Integration
+
+- Create subscription plans in Stripe
+- Handle checkout sessions for upgrades
+- Process webhooks for payment events
+- Sync subscription status with database
+
+---
 
 ### File Summary
 
-| Action | File |
-|--------|------|
-| Create | `src/pages/auth/ForgotPassword.tsx` |
-| Create | `src/pages/auth/ResetPassword.tsx` |
-| Create | `supabase/functions/send-password-reset/index.ts` |
-| Modify | `src/contexts/AuthContext.tsx` |
-| Modify | `src/App.tsx` |
-| Modify | `src/i18n/locales/en.json` |
-| Modify | `src/i18n/locales/es.json` |
+| Action | File/Area |
+|--------|-----------|
+| Create | Database migrations for new tables |
+| Create | `src/pages/admin/*` - All admin pages |
+| Create | `src/components/admin/*` - Admin components |
+| Create | `src/contexts/AdminContext.tsx` - Admin state |
+| Create | `src/hooks/useAdmin*.ts` - Admin data hooks |
+| Create | `supabase/functions/admin-*` - Edge functions |
+| Modify | `src/App.tsx` - Add admin routes |
+| Modify | Translation files - Add admin translations |
+
+---
+
+### Recommended Implementation Order
+
+1. **Phase 1: Foundation**
+   - Database schema for subscriptions and admin roles
+   - Admin authentication and route protection
+   - Basic admin layout and navigation
+
+2. **Phase 2: Core Features**
+   - Tenant management with list/detail views
+   - Subscription tracking and display
+   - Basic support ticket system
+
+3. **Phase 3: Payments**
+   - Stripe integration for subscriptions
+   - Payment history and invoice management
+   - Plan upgrade/downgrade flows
+
+4. **Phase 4: AI & Analytics**
+   - AI-powered ticket assistant
+   - Platform analytics dashboard
+   - User engagement metrics
+
+5. **Phase 5: Polish**
+   - Announcements system
+   - Audit logging
+   - Admin notification system
 
