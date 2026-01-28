@@ -1,148 +1,95 @@
 
 
-# Plan: Apply Sales Structure to Purchases
+## Password Reset Feature Implementation
 
-## Overview
-This plan will refactor the Purchases page to match the modern, polished structure of the Sales page. The key improvements include creating a dedicated dialog component, adding a visual product catalog, auto-generating purchase order numbers, proper currency formatting, and a supplier info section similar to customer info in Sales.
+This plan implements a complete password reset flow so users can recover access to their accounts when they forget their passwords.
 
-## What Will Change
+### How It Works
 
-### 1. Create `PurchasesFormDialog` Component
-A new component `src/components/purchases/PurchasesFormDialog.tsx` that mirrors `SalesFormDialog`:
+1. **User clicks "Forgot Password?"** on the login page
+2. **User enters their email** on the forgot password page
+3. **System sends a reset email** with a secure link
+4. **User clicks the link** and is taken to a page to set a new password
+5. **User sets new password** and can log in again
 
-| Feature | Current (Purchases) | New (Matching Sales) |
-|---------|---------------------|----------------------|
-| Form location | Inline in page | Dedicated dialog component |
-| PO number | Manual input | Auto-generated (PO-YYMMDD-XXXX) |
-| Product selection | Dropdown per line | Visual ProductCatalog with cards |
-| Currency display | Hardcoded `$` | `formatCurrency()` from context |
-| Layout | Single column | Two-column (supplier/catalog + cart/summary) |
-| Supplier info | Just dropdown | Dropdown + shows selected supplier details |
+### What Will Be Created
 
-### 2. Create `PurchaseProductCatalog` Component
-A new component `src/components/purchases/PurchaseProductCatalog.tsx` similar to `ProductCatalog`:
-- Visual grid of product cards with search
-- Shows product name, SKU, and **cost** (instead of price)
-- Plus/minus buttons for quantity selection
-- Highlights selected products
+#### New Pages
+- **Forgot Password Page** (`/forgot-password`) - Where users enter their email to request a reset
+- **Reset Password Page** (`/reset-password`) - Where users set their new password after clicking the email link
 
-### 3. Refactor `Purchases.tsx` Page
-Simplify the page by:
-- Moving all form logic to `PurchasesFormDialog`
-- Removing inline state management for form fields
-- Adding `formatCurrency` for table display
-- Matching the clean structure of `Sales.tsx`
+#### Backend Function
+- **Password Reset Email Function** - Sends beautifully formatted password reset emails matching your app's branding
 
-### 4. Add Translation Keys
-New keys for purchases in `en.json` and `es.json`:
-- `purchases.newPurchase` - Dialog title
-- `purchases.purchaseOrderNumber` - PO number label
-- `purchases.supplierInfo` - Supplier section header
-- `purchases.selectProducts` - Product selection label
-- `purchases.searchProducts` - Search placeholder
-- `purchases.noProductsFound` - Empty search state
-- `purchases.cart` - Cart section header
-- `purchases.emptyCart` - Empty cart message
-- `purchases.completePurchase` - Submit button text
-- `purchases.notesPlaceholder` - Notes placeholder
+#### Authentication Updates
+- Add password reset functions to the authentication system
+- Handle the secure token from email links
 
-## New Component Structure
+---
 
+### Technical Details
+
+#### 1. Create Forgot Password Page
+**File:** `src/pages/auth/ForgotPassword.tsx`
+
+- Email input form with validation
+- Success message after email is sent
+- Link back to login page
+- Language switcher (consistent with login page)
+- Uses the built-in Supabase `resetPasswordForEmail` method
+
+#### 2. Create Reset Password Page
+**File:** `src/pages/auth/ResetPassword.tsx`
+
+- New password input with confirmation
+- Password visibility toggle (consistent with login)
+- Validates passwords match
+- Shows success message and redirects to login
+- Uses `updateUser` to set the new password
+
+#### 3. Update AuthContext
+**File:** `src/contexts/AuthContext.tsx`
+
+Add two new methods:
 ```text
-src/components/purchases/
-  ├── PurchasesFormDialog.tsx    (new - main dialog)
-  └── PurchaseProductCatalog.tsx (new - product grid)
+resetPassword(email) - Sends password reset email
+updatePassword(newPassword) - Sets the new password
 ```
 
-## UI Layout (PurchasesFormDialog)
+#### 4. Create Edge Function for Email
+**File:** `supabase/functions/send-password-reset/index.ts`
 
+- Uses existing RESEND_API_KEY (already configured)
+- Sends branded email matching your company style
+- Includes secure reset link with token
+
+#### 5. Update App Routes
+**File:** `src/App.tsx`
+
+Add routes:
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ New Purchase                                                 │
-├─────────────────────────────┬───────────────────────────────┤
-│ Left Column                 │ Right Column                  │
-│                             │                               │
-│ ┌─────────────────────────┐ │ ┌───────────────────────────┐ │
-│ │ PO # (auto-generated)   │ │ │ Cart (X items)            │ │
-│ └─────────────────────────┘ │ │ ┌───────────────────────┐ │ │
-│                             │ │ │ Product 1    $50.00   │ │ │
-│ ┌─────────────────────────┐ │ │ │ 2 x $25.00      [X]   │ │ │
-│ │ Supplier [Dropdown]     │ │ │ └───────────────────────┘ │ │
-│ └─────────────────────────┘ │ │ ┌───────────────────────┐ │ │
-│                             │ │ │ Product 2    $30.00   │ │ │
-│ ┌─────────────────────────┐ │ │ │ 1 x $30.00      [X]   │ │ │
-│ │ Warehouse [Dropdown]    │ │ │ └───────────────────────┘ │ │
-│ └─────────────────────────┘ │ └───────────────────────────┘ │
-│                             │                               │
-│ ─────────────────────────── │ ┌───────────────────────────┐ │
-│                             │ │ Notes                     │ │
-│ ┌─────────────────────────┐ │ │ [___________________]    │ │
-│ │ Product Catalog         │ │ └───────────────────────────┘ │
-│ │ [Search products...]    │ │                               │
-│ │ ┌─────────┐┌─────────┐  │ │ ┌───────────────────────────┐ │
-│ │ │Product 1││Product 2│  │ │ │ Subtotal:        $80.00  │ │
-│ │ │$25 cost ││$30 cost │  │ │ │ Total:           $80.00  │ │
-│ │ │[- 2 +]  ││[- 1 +]  │  │ │ └───────────────────────────┘ │
-│ │ └─────────┘└─────────┘  │ │                               │
-│ │ ┌─────────┐┌─────────┐  │ │ ┌───────────────────────────┐ │
-│ │ │Product 3││Product 4│  │ │ │ [Cancel] [Complete Order] │ │
-│ │ └─────────┘└─────────┘  │ │ └───────────────────────────┘ │
-│ └─────────────────────────┘ │                               │
-└─────────────────────────────┴───────────────────────────────┘
+/forgot-password → ForgotPassword page
+/reset-password → ResetPassword page
 ```
 
-## Files to Create/Modify
+#### 6. Add Translations
+**Files:** `src/i18n/locales/en.json`, `src/i18n/locales/es.json`
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/purchases/PurchasesFormDialog.tsx` | Create | Main dialog with two-column layout, supplier/warehouse dropdowns, product catalog, cart, and totals |
-| `src/components/purchases/PurchaseProductCatalog.tsx` | Create | Visual product grid showing cost, with quantity selectors |
-| `src/pages/Purchases.tsx` | Modify | Simplify to use new dialog, add currency formatting to table |
-| `src/i18n/locales/en.json` | Modify | Add new purchases translation keys |
-| `src/i18n/locales/es.json` | Modify | Add Spanish translations for new keys |
+New translation keys for:
+- Page titles and descriptions
+- Form labels and buttons
+- Success/error messages
+- Email content
 
-## Technical Details
+### File Summary
 
-### Auto-generated PO Number
-```typescript
-function generatePONumber(count: number): string {
-  const date = new Date();
-  const year = date.getFullYear().toString().slice(-2);
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const sequence = (count + 1).toString().padStart(4, '0');
-  return `PO-${year}${month}${day}-${sequence}`;
-}
-```
-
-### Currency Formatting in Table
-Change from:
-```typescript
-render: (purchase) => `$${Number(purchase.total).toFixed(2)}`
-```
-To:
-```typescript
-render: (purchase) => formatCurrency(Number(purchase.total))
-```
-
-### Product Selection Types
-```typescript
-type SelectedProduct = {
-  product_id: string;
-  name: string;
-  quantity: number;
-  unit_cost: number;  // Using cost instead of price for purchases
-  subtotal: number;
-};
-```
-
-## Key Differences from Sales
-
-| Aspect | Sales | Purchases |
-|--------|-------|-----------|
-| Number prefix | RCP- (Receipt) | PO- (Purchase Order) |
-| Partner | Customer (optional inline fields) | Supplier (dropdown) |
-| Location | Branch (optional) | Warehouse (dropdown) |
-| Product price field | `price` (selling price) | `cost` (purchase cost) |
-| Email feature | Send receipt | Not included (future enhancement) |
+| Action | File |
+|--------|------|
+| Create | `src/pages/auth/ForgotPassword.tsx` |
+| Create | `src/pages/auth/ResetPassword.tsx` |
+| Create | `supabase/functions/send-password-reset/index.ts` |
+| Modify | `src/contexts/AuthContext.tsx` |
+| Modify | `src/App.tsx` |
+| Modify | `src/i18n/locales/en.json` |
+| Modify | `src/i18n/locales/es.json` |
 
