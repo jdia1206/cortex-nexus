@@ -80,7 +80,7 @@ export function DataTable<T extends { id: string }>({
     <div className="space-y-4">
       {/* Search */}
       {searchKeys.length > 0 && (
-        <div className="relative max-w-sm">
+        <div className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
@@ -103,15 +103,15 @@ export function DataTable<T extends { id: string }>({
           onAction={onEmptyAction}
         />
       ) : (
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 {columns.map((col) => (
-                  <TableHead key={col.key}>{col.header}</TableHead>
+                  <TableHead key={col.key} className="whitespace-nowrap">{col.header}</TableHead>
                 ))}
                 {(onEdit || onDelete) && (
-                  <TableHead className="w-24 text-right">{t('common.actions')}</TableHead>
+                  <TableHead className="w-24 text-right sticky right-0 bg-background">{t('common.actions')}</TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -119,17 +119,18 @@ export function DataTable<T extends { id: string }>({
               {paginatedData.map((item) => (
                 <TableRow key={item.id}>
                   {columns.map((col) => (
-                    <TableCell key={col.key}>
+                    <TableCell key={col.key} className="whitespace-nowrap">
                       {col.render ? col.render(item) : (item as any)[col.key]}
                     </TableCell>
                   ))}
                   {(onEdit || onDelete) && (
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                    <TableCell className="text-right sticky right-0 bg-background">
+                      <div className="flex justify-end gap-1">
                         {onEdit && (
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8"
                             onClick={() => onEdit(item)}
                           >
                             <Edit className="h-4 w-4" />
@@ -139,6 +140,7 @@ export function DataTable<T extends { id: string }>({
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8"
                             onClick={() => onDelete(item)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -156,11 +158,11 @@ export function DataTable<T extends { id: string }>({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground text-center sm:text-left">
             {t('common.showing')} {page * pageSize + 1}-{Math.min((page + 1) * pageSize, filteredData.length)} {t('common.of')} {filteredData.length}
           </p>
-          <div className="flex gap-2">
+          <div className="flex justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -169,6 +171,9 @@ export function DataTable<T extends { id: string }>({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
+            <span className="flex items-center text-sm text-muted-foreground px-2">
+              {page + 1} / {totalPages}
+            </span>
             <Button
               variant="outline"
               size="sm"
