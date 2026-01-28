@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 interface AdminContextType {
   isPlatformAdmin: boolean;
@@ -13,6 +14,7 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { pathname } = useLocation();
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [platformRole, setPlatformRole] = useState<'super_admin' | 'support_agent' | null>(null);
@@ -29,6 +31,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
 
       try {
+        setIsLoading(true);
         const { data, error } = await supabase
           .from('platform_admins')
           .select('role')
@@ -57,7 +60,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
 
     checkAdminStatus();
-  }, [user]);
+  }, [user?.id, pathname]);
 
   return (
     <AdminContext.Provider
