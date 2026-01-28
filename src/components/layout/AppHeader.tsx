@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe, LogOut, User, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
+import { CurrencySwitcher } from '@/components/shared/CurrencySwitcher';
 
 interface AppHeaderProps {
   companyName?: string;
@@ -40,6 +41,9 @@ export function AppHeader({ companyName, userName, onLogout }: AppHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Currency Switcher */}
+        <CurrencySwitcher />
+
         {/* Theme Toggle */}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {isDark ? (
