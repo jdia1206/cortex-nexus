@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import {
   ShoppingCart,
@@ -10,16 +11,7 @@ import {
   Package,
   AlertTriangle,
   TrendingUp,
-  DollarSign,
 } from 'lucide-react';
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
 
 function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' {
   switch (status) {
@@ -38,6 +30,7 @@ function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destr
 export default function Dashboard() {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
+  const { formatCurrency } = useCurrency();
   const { data: stats, isLoading } = useDashboardStats();
 
   const statsCards = [
