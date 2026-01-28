@@ -1,0 +1,344 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, ShoppingCart, User } from 'lucide-react';
+import { ProductCatalog } from './ProductCatalog';
+import { useCurrency } from '@/contexts/CurrencyContext';
+
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  tax_rate: number;
+  sku?: string | null;
+  quantity: number;
+};
+
+type SelectedProduct = {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+  tax_rate: number;
+  subtotal: number;
+};
+
+interface CustomerInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+interface SalesFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  products: Product[];
+  onSubmit: (data: {
+    invoice: {
+      invoice_number: string;
+      customer_id: string | null;
+      notes: string | null;
+      discount_amount: number;
+      subtotal: number;
+      tax_amount: number;
+      total: number;
+    };
+    items: {
+      product_id: string | null;
+      quantity: number;
+      unit_price: number;
+      tax_rate: number;
+      subtotal: number;
+    }[];
+    customerInfo: CustomerInfo;
+  }) => Promise<void>;
+  isSubmitting: boolean;
+  salesCount: number;
+}
+
+function generateReceiptNumber(count: number): string {
+  const date = new Date();
+  const year = date.getFullYear().toString().slice(-2);
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const sequence = (count + 1).toString().padStart(4, '0');
+  return `RCP-${year}${month}${day}-${sequence}`;
+}
+
+export function SalesFormDialog({
+  open,
+  onOpenChange,
+  products,
+  onSubmit,
+  isSubmitting,
+  salesCount,
+}: SalesFormDialogProps) {
+  const { t } = useTranslation();
+  const { formatCurrency } = useCurrency();
+
+  const [receiptNumber, setReceiptNumber] = useState('');
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+  });
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [notes, setNotes] = useState('');
+  const [discount, setDiscount] = useState(0);
+
+  // Generate receipt number when dialog opens
+  useEffect(() => {
+    if (open) {
+      setReceiptNumber(generateReceiptNumber(salesCount));
+    }
+  }, [open, salesCount]);
+
+  const calculateTotals = () => {
+    const subtotal = selectedProducts.reduce((sum, item) => sum + item.subtotal, 0);
+    const taxAmount = selectedProducts.reduce(
+      (sum, item) => sum + (item.subtotal * item.tax_rate / 100), 
+      0
+    );
+    const total = subtotal + taxAmount - discount;
+    return { subtotal, taxAmount, total };
+  };
+
+  const { subtotal, taxAmount, total } = calculateTotals();
+
+  const handleSubmit = async () => {
+    await onSubmit({
+      invoice: {
+        invoice_number: receiptNumber,
+        customer_id: null,
+        notes: notes || null,
+        discount_amount: discount,
+        subtotal,
+        tax_amount: taxAmount,
+        total,
+      },
+      items: selectedProducts.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: item.tax_rate,
+        subtotal: item.subtotal,
+      })),
+      customerInfo,
+    });
+    resetForm();
+  };
+
+  const resetForm = () => {
+    onOpenChange(false);
+    setCustomerInfo({ firstName: '', lastName: '', email: '', phone: '' });
+    setSelectedProducts([]);
+    setNotes('');
+    setDiscount(0);
+  };
+
+  const removeProduct = (productId: string) => {
+    setSelectedProducts(selectedProducts.filter(p => p.product_id !== productId));
+  };
+
+  const canSubmit = receiptNumber && selectedProducts.length > 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            {t('sales.newSale')}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Customer & Products */}
+          <div className="space-y-6">
+            {/* Receipt Number */}
+            <div className="space-y-2">
+              <Label>{t('sales.receiptNumber')}</Label>
+              <Input
+                value={receiptNumber}
+                readOnly
+                className="bg-muted font-mono"
+              />
+            </div>
+
+            {/* Customer Info */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-base font-medium">{t('sales.customerInfo')}</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('sales.firstName')}</Label>
+                  <Input
+                    value={customerInfo.firstName}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
+                    placeholder={t('sales.firstNamePlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('sales.lastName')}</Label>
+                  <Input
+                    value={customerInfo.lastName}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
+                    placeholder={t('sales.lastNamePlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('sales.email')}</Label>
+                  <Input
+                    type="email"
+                    value={customerInfo.email}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                    placeholder={t('sales.emailPlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('sales.phone')}</Label>
+                  <Input
+                    type="tel"
+                    value={customerInfo.phone}
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                    placeholder={t('sales.phonePlaceholder')}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Product Catalog */}
+            <div className="space-y-2">
+              <Label className="text-base font-medium">{t('sales.selectProducts')}</Label>
+              <ProductCatalog
+                products={products}
+                selectedProducts={selectedProducts}
+                onSelectionChange={setSelectedProducts}
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Cart & Summary */}
+          <div className="space-y-6">
+            {/* Selected Items */}
+            <div className="space-y-2">
+              <Label className="text-base font-medium">
+                {t('sales.cart')} ({selectedProducts.length})
+              </Label>
+              <div className="border rounded-lg p-4 min-h-[200px] max-h-[300px] overflow-y-auto">
+                {selectedProducts.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {t('sales.emptyCart')}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedProducts.map((item) => (
+                      <div key={item.product_id} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.quantity} x {formatCurrency(item.unit_price)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline">
+                            {formatCurrency(item.subtotal)}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => removeProduct(item.product_id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label>{t('sales.notes')}</Label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder={t('sales.notesPlaceholder')}
+              />
+            </div>
+
+            {/* Discount */}
+            <div className="space-y-2">
+              <Label>{t('sales.discount')}</Label>
+              <Input
+                type="number"
+                value={discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            {/* Totals */}
+            <div className="border rounded-lg p-4 bg-muted/50 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>{t('sales.subtotal')}:</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>{t('sales.tax')}:</span>
+                <span>{formatCurrency(taxAmount)}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-destructive">
+                  <span>{t('sales.discount')}:</span>
+                  <span>-{formatCurrency(discount)}</span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>{t('sales.total')}:</span>
+                <span>{formatCurrency(total)}</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={resetForm}>
+                {t('common.cancel')}
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isSubmitting || !canSubmit}
+              >
+                {isSubmitting ? t('common.saving') : t('sales.completeSale')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
