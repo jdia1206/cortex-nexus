@@ -190,7 +190,14 @@
     "emptyDescription": "Create your first sale to get started",
     "created": "Sale created successfully",
     "updated": "Sale updated successfully",
-    "deleted": "Sale deleted successfully"
+    "deleted": "Sale deleted successfully",
+    "sendReceiptEmail": "Send receipt to customer's email",
+    "sendingReceipt": "Sending receipt...",
+    "receiptSent": "Receipt sent successfully!",
+    "receiptSendError": "Failed to send receipt email",
+    "resendReceipt": "Resend Receipt",
+    "enterEmail": "Enter email address",
+    "emailRequired": "Email is required to send receipt"
   },
   "purchases": {
     "title": "Purchases",

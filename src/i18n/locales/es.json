@@ -190,7 +190,14 @@
     "emptyDescription": "Crea tu primera venta para comenzar",
     "created": "Venta creada exitosamente",
     "updated": "Venta actualizada exitosamente",
-    "deleted": "Venta eliminada exitosamente"
+    "deleted": "Venta eliminada exitosamente",
+    "sendReceiptEmail": "Enviar recibo al correo del cliente",
+    "sendingReceipt": "Enviando recibo...",
+    "receiptSent": "¡Recibo enviado exitosamente!",
+    "receiptSendError": "Error al enviar el recibo",
+    "resendReceipt": "Reenviar Recibo",
+    "enterEmail": "Ingresa el correo electrónico",
+    "emailRequired": "El correo es requerido para enviar el recibo"
   },
   "purchases": {
     "title": "Compras",

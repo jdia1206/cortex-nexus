@@ -12,9 +12,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, ShoppingCart, User } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Trash2, ShoppingCart, User, Mail, Loader2 } from 'lucide-react';
 import { ProductCatalog } from './ProductCatalog';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type Product = {
   id: string;
@@ -86,7 +90,8 @@ export function SalesFormDialog({
   salesCount,
 }: SalesFormDialogProps) {
   const { t } = useTranslation();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, currency } = useCurrency();
+  const { tenant } = useAuth();
 
   const [receiptNumber, setReceiptNumber] = useState('');
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
@@ -98,6 +103,8 @@ export function SalesFormDialog({
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [notes, setNotes] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [sendReceiptEmail, setSendReceiptEmail] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Generate receipt number when dialog opens
   useEffect(() => {
@@ -117,6 +124,49 @@ export function SalesFormDialog({
   };
 
   const { subtotal, taxAmount, total } = calculateTotals();
+
+  const sendReceiptEmailToCustomer = async () => {
+    if (!customerInfo.email) return;
+    
+    setIsSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-receipt-email', {
+        body: {
+          to_email: customerInfo.email,
+          receipt_number: receiptNumber,
+          receipt_date: new Date().toLocaleDateString(),
+          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`.trim() || 'Customer',
+          customer_email: customerInfo.email,
+          customer_phone: customerInfo.phone,
+          company_name: tenant?.name || 'Company',
+          company_email: tenant?.email,
+          company_phone: tenant?.phone,
+          company_address: tenant?.address,
+          items: selectedProducts.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            tax_rate: item.tax_rate,
+            subtotal: item.subtotal,
+          })),
+          subtotal,
+          tax_amount: taxAmount,
+          discount_amount: discount,
+          total,
+          currency_symbol: currency,
+          notes,
+        },
+      });
+
+      if (error) throw error;
+      toast.success(t('sales.receiptSent'));
+    } catch (error) {
+      console.error('Failed to send receipt email:', error);
+      toast.error(t('sales.receiptSendError'));
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   const handleSubmit = async () => {
     await onSubmit({
@@ -138,6 +188,12 @@ export function SalesFormDialog({
       })),
       customerInfo,
     });
+
+    // Send receipt email if checkbox is checked and email is provided
+    if (sendReceiptEmail && customerInfo.email) {
+      await sendReceiptEmailToCustomer();
+    }
+
     resetForm();
   };
 
@@ -147,6 +203,7 @@ export function SalesFormDialog({
     setSelectedProducts([]);
     setNotes('');
     setDiscount(0);
+    setSendReceiptEmail(false);
   };
 
   const removeProduct = (productId: string) => {
@@ -324,6 +381,26 @@ export function SalesFormDialog({
               </div>
             </div>
 
+            {/* Send Receipt Email Checkbox */}
+            <div className="flex items-center space-x-2 py-2">
+              <Checkbox
+                id="sendReceiptEmail"
+                checked={sendReceiptEmail}
+                onCheckedChange={(checked) => setSendReceiptEmail(checked === true)}
+                disabled={!customerInfo.email}
+              />
+              <Label 
+                htmlFor="sendReceiptEmail" 
+                className={`flex items-center gap-2 text-sm cursor-pointer ${!customerInfo.email ? 'text-muted-foreground' : ''}`}
+              >
+                <Mail className="h-4 w-4" />
+                {t('sales.sendReceiptEmail')}
+              </Label>
+            </div>
+            {sendReceiptEmail && !customerInfo.email && (
+              <p className="text-xs text-destructive">{t('sales.emailRequired')}</p>
+            )}
+
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={resetForm}>
@@ -331,9 +408,16 @@ export function SalesFormDialog({
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={isSubmitting || !canSubmit}
+                disabled={isSubmitting || isSendingEmail || !canSubmit}
               >
-                {isSubmitting ? t('common.saving') : t('sales.completeSale')}
+                {isSubmitting || isSendingEmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isSendingEmail ? t('sales.sendingReceipt') : t('common.saving')}
+                  </>
+                ) : (
+                  t('sales.completeSale')
+                )}
               </Button>
             </div>
           </div>
