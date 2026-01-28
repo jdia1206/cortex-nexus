@@ -13,7 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, ShoppingCart, User, Mail, Loader2 } from 'lucide-react';
+import { Trash2, ShoppingCart, User, Mail, Loader2, Building2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ProductCatalog } from './ProductCatalog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,8 +40,15 @@ type SelectedProduct = {
 };
 
 interface CustomerInfo {
+  customerType: 'person' | 'company';
+  // Company fields
+  companyName: string;
+  taxId: string;
+  contactPerson: string;
+  // Person fields
   firstName: string;
   lastName: string;
+  // Common fields
   email: string;
   phone: string;
 }
@@ -95,6 +103,10 @@ export function SalesFormDialog({
 
   const [receiptNumber, setReceiptNumber] = useState('');
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
+    customerType: 'person',
+    companyName: '',
+    taxId: '',
+    contactPerson: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -135,7 +147,9 @@ export function SalesFormDialog({
           to_email: customerInfo.email,
           receipt_number: receiptNumber,
           receipt_date: new Date().toLocaleDateString(),
-          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`.trim() || 'Customer',
+          customer_name: customerInfo.customerType === 'company' 
+            ? customerInfo.companyName || 'Customer'
+            : `${customerInfo.firstName} ${customerInfo.lastName}`.trim() || 'Customer',
           customer_email: customerInfo.email,
           customer_phone: customerInfo.phone,
           company_name: tenant?.name || 'Company',
@@ -199,7 +213,16 @@ export function SalesFormDialog({
 
   const resetForm = () => {
     onOpenChange(false);
-    setCustomerInfo({ firstName: '', lastName: '', email: '', phone: '' });
+    setCustomerInfo({
+      customerType: 'person',
+      companyName: '',
+      taxId: '',
+      contactPerson: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+    });
     setSelectedProducts([]);
     setNotes('');
     setDiscount(0);
@@ -241,23 +264,83 @@ export function SalesFormDialog({
                 <User className="h-4 w-4 text-muted-foreground" />
                 <Label className="text-base font-medium">{t('sales.customerInfo')}</Label>
               </div>
+              
+              {/* Customer Type Selector */}
+              <RadioGroup
+                value={customerInfo.customerType}
+                onValueChange={(value: 'person' | 'company') => 
+                  setCustomerInfo({ ...customerInfo, customerType: value })
+                }
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="person" id="sale-person" />
+                  <Label htmlFor="sale-person" className="flex items-center gap-1 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    {t('customers.person')}
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="company" id="sale-company" />
+                  <Label htmlFor="sale-company" className="flex items-center gap-1 cursor-pointer">
+                    <Building2 className="h-4 w-4" />
+                    {t('customers.company')}
+                  </Label>
+                </div>
+              </RadioGroup>
+
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('sales.firstName')}</Label>
-                  <Input
-                    value={customerInfo.firstName}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
-                    placeholder={t('sales.firstNamePlaceholder')}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('sales.lastName')}</Label>
-                  <Input
-                    value={customerInfo.lastName}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
-                    placeholder={t('sales.lastNamePlaceholder')}
-                  />
-                </div>
+                {customerInfo.customerType === 'company' ? (
+                  <>
+                    {/* Company Fields */}
+                    <div className="space-y-2 col-span-2">
+                      <Label className="text-sm">{t('customers.companyName')}</Label>
+                      <Input
+                        value={customerInfo.companyName}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, companyName: e.target.value })}
+                        placeholder={t('customers.companyNamePlaceholder')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('customers.taxId')}</Label>
+                      <Input
+                        value={customerInfo.taxId}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, taxId: e.target.value })}
+                        placeholder={t('customers.taxIdPlaceholder')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('customers.contactPerson')}</Label>
+                      <Input
+                        value={customerInfo.contactPerson}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, contactPerson: e.target.value })}
+                        placeholder={t('customers.contactPersonPlaceholder')}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Person Fields */}
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('sales.firstName')}</Label>
+                      <Input
+                        value={customerInfo.firstName}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
+                        placeholder={t('sales.firstNamePlaceholder')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t('sales.lastName')}</Label>
+                      <Input
+                        value={customerInfo.lastName}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
+                        placeholder={t('sales.lastNamePlaceholder')}
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {/* Common Fields */}
                 <div className="space-y-2">
                   <Label className="text-sm">{t('sales.email')}</Label>
                   <Input
