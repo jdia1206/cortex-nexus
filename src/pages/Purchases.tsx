@@ -9,7 +9,15 @@ import { useProducts } from '@/hooks/useProducts';
 import { useWarehouses } from '@/hooks/useWarehouses';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { PurchasesFormDialog } from '@/components/purchases/PurchasesFormDialog';
+import { CheckCircle, XCircle, MoreHorizontal } from 'lucide-react';
 
 type PurchaseInvoice = {
   id: string;
@@ -26,7 +34,7 @@ type PurchaseInvoice = {
 export default function Purchases() {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
-  const { purchases, isLoading, create, delete: deletePurchase, isCreating, isDeleting } = usePurchases();
+  const { purchases, isLoading, create, updateStatus, delete: deletePurchase, isCreating, isDeleting } = usePurchases();
   const { suppliers } = useSuppliers();
   const { products } = useProducts();
   const { warehouses } = useWarehouses();
@@ -35,6 +43,10 @@ export default function Purchases() {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<PurchaseInvoice | null>(null);
+
+  const handleStatusChange = async (purchase: PurchaseInvoice, newStatus: string) => {
+    await updateStatus({ id: purchase.id, status: newStatus });
+  };
 
   const columns: Column<PurchaseInvoice>[] = [
     { key: 'invoice_number', header: t('purchases.invoiceNumber') },
@@ -58,12 +70,33 @@ export default function Purchases() {
       key: 'status', 
       header: t('purchases.status'),
       render: (purchase) => (
-        <Badge variant={
-          purchase.status === 'received' ? 'default' : 
-          purchase.status === 'cancelled' ? 'destructive' : 'secondary'
-        }>
-          {t(`purchases.${purchase.status}`)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={
+            purchase.status === 'received' ? 'default' : 
+            purchase.status === 'cancelled' ? 'destructive' : 'secondary'
+          }>
+            {t(`purchases.${purchase.status}`)}
+          </Badge>
+          {purchase.status === 'pending' && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleStatusChange(purchase, 'received')}>
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                  {t('purchases.markReceived')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange(purchase, 'cancelled')}>
+                  <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                  {t('purchases.markCancelled')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       ),
     },
   ];

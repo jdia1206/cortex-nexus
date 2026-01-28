@@ -15,6 +15,7 @@ type Product = {
   tax_rate: number;
   sku?: string | null;
   quantity: number;
+  image_url?: string | null;
 };
 
 type SelectedProduct = {
@@ -132,16 +133,27 @@ export function ProductCatalog({ products, selectedProducts, onSelectionChange }
                   }`}
                 >
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex gap-3 mb-2">
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name}
+                          className="w-12 h-12 rounded-md object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{product.name}</h4>
                         {product.sku && (
                           <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
                         )}
+                        <Badge variant="secondary" className="mt-1">
+                          {formatCurrency(Number(product.price))}
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="ml-2 shrink-0">
-                        {formatCurrency(Number(product.price))}
-                      </Badge>
                     </div>
                     
                     <div className="flex items-center justify-between mt-3">
