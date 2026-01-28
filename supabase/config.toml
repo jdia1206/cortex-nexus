@@ -1,1 +1,4 @@
 project_id = "oreqiaagvpclssbwcuqc"
+
+[functions.send-receipt-email]
+verify_jwt = false
