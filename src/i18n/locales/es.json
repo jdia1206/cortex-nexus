@@ -252,6 +252,7 @@
     "selectProducts": "Seleccionar Productos",
     "searchProducts": "Buscar productos por nombre o SKU...",
     "noProductsFound": "No se encontraron productos",
+    "newProduct": "Nuevo Producto",
     "currentStock": "Stock",
     "cart": "Carrito",
     "emptyCart": "No hay productos seleccionados. Agrega productos del catálogo.",

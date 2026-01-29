@@ -37,7 +37,7 @@ export default function Purchases() {
   const { profile, tenant, signOut } = useAuth();
   const { purchases, isLoading, create, updateStatus, delete: deletePurchase, isCreating, isDeleting } = usePurchases();
   const { suppliers } = useSuppliers();
-  const { products } = useProducts();
+  const { products, create: createProduct, isCreating: isCreatingProduct } = useProducts();
   const { warehouses } = useWarehouses();
   const { formatCurrency, currency } = useCurrency();
 
@@ -213,7 +213,11 @@ export default function Purchases() {
           suppliers={suppliers}
           warehouses={warehouses as any[]}
           onSubmit={handleSubmit}
+          onCreateProduct={async (data) => {
+            await createProduct(data);
+          }}
           isSubmitting={isCreating}
+          isCreatingProduct={isCreatingProduct}
           purchasesCount={purchases.length}
         />
 

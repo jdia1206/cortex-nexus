@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Plus, Minus, Package } from 'lucide-react';
+import { Search, Plus, Minus, Package, PlusCircle } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { ProductForm } from '@/components/products/ProductForm';
 
 type Product = {
   id: string;
@@ -31,12 +32,21 @@ interface PurchaseProductCatalogProps {
   products: Product[];
   selectedProducts: SelectedProduct[];
   onSelectionChange: (products: SelectedProduct[]) => void;
+  onCreateProduct?: (data: any) => Promise<void>;
+  isCreatingProduct?: boolean;
 }
 
-export function PurchaseProductCatalog({ products, selectedProducts, onSelectionChange }: PurchaseProductCatalogProps) {
+export function PurchaseProductCatalog({ 
+  products, 
+  selectedProducts, 
+  onSelectionChange,
+  onCreateProduct,
+  isCreatingProduct 
+}: PurchaseProductCatalogProps) {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const [search, setSearch] = useState('');
+  const [productFormOpen, setProductFormOpen] = useState(false);
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -99,16 +109,35 @@ export function PurchaseProductCatalog({ products, selectedProducts, onSelection
     }
   };
 
+  const handleCreateProduct = async (data: any) => {
+    if (onCreateProduct) {
+      await onCreateProduct(data);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t('purchases.searchProducts')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('purchases.searchProducts')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {onCreateProduct && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => setProductFormOpen(true)}
+            className="shrink-0"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            {t('purchases.newProduct')}
+          </Button>
+        )}
       </div>
 
       <ScrollArea className="h-[300px] pr-4">
@@ -197,6 +226,15 @@ export function PurchaseProductCatalog({ products, selectedProducts, onSelection
           </div>
         )}
       </ScrollArea>
+
+      {onCreateProduct && (
+        <ProductForm
+          open={productFormOpen}
+          onOpenChange={setProductFormOpen}
+          onSubmit={handleCreateProduct}
+          isLoading={isCreatingProduct}
+        />
+      )}
     </div>
   );
 }

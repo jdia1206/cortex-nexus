@@ -78,7 +78,9 @@ interface PurchasesFormDialogProps {
       subtotal: number;
     }[];
   }) => Promise<void>;
+  onCreateProduct?: (data: any) => Promise<void>;
   isSubmitting: boolean;
+  isCreatingProduct?: boolean;
   purchasesCount: number;
 }
 
@@ -98,7 +100,9 @@ export function PurchasesFormDialog({
   suppliers,
   warehouses,
   onSubmit,
+  onCreateProduct,
   isSubmitting,
+  isCreatingProduct,
   purchasesCount,
 }: PurchasesFormDialogProps) {
   const { t } = useTranslation();
@@ -245,6 +249,8 @@ export function PurchasesFormDialog({
                 products={products}
                 selectedProducts={selectedProducts}
                 onSelectionChange={setSelectedProducts}
+                onCreateProduct={onCreateProduct}
+                isCreatingProduct={isCreatingProduct}
               />
             </div>
           </div>

@@ -277,6 +277,7 @@
     "selectProducts": "Select Products",
     "searchProducts": "Search products by name or SKU...",
     "noProductsFound": "No products found",
+    "newProduct": "New Product",
     "currentStock": "Stock",
     "cart": "Cart",
     "emptyCart": "No products selected. Add products from the catalog.",
