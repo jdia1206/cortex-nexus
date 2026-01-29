@@ -24,6 +24,7 @@ import Transfers from "./pages/Transfers";
 import Reports from "./pages/Reports";
 import Company from "./pages/settings/Company";
 import Users from "./pages/settings/Users";
+import ActivityLog from "./pages/settings/ActivityLog";
 import Branches from "./pages/settings/Branches";
 import Warehouses from "./pages/settings/Warehouses";
 import Billing from "./pages/settings/Billing";
@@ -116,6 +117,11 @@ const App = () => (
               <Route path="/settings/users" element={
                 <ProtectedRoute>
                   <Users />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/activity" element={
+                <ProtectedRoute>
+                  <ActivityLog />
                 </ProtectedRoute>
               } />
               <Route path="/settings/branches" element={

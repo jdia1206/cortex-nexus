@@ -52,6 +52,7 @@ const mainNavItems = [
 const settingsNavItems = [
   { key: 'company', icon: Building2, url: '/settings/company' },
   { key: 'users', icon: Users, url: '/settings/users' },
+  { key: 'activityLog', icon: FileText, url: '/settings/activity' },
   { key: 'branches', icon: Building2, url: '/settings/branches' },
   { key: 'warehouses', icon: Warehouse, url: '/settings/warehouses' },
   { key: 'billing', icon: CreditCard, url: '/settings/billing' },

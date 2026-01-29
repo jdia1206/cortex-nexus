@@ -92,7 +92,24 @@
     "branches": "Branches",
     "warehouses": "Warehouses",
     "company": "Company",
-    "reports": "Reports"
+    "reports": "Reports",
+    "activityLog": "Activity Log"
+  },
+  "activityLog": {
+    "title": "Activity Log",
+    "description": "View all user actions and transactions",
+    "user": "User",
+    "action": "Action",
+    "entity": "Entity",
+    "date": "Date",
+    "details": "Details",
+    "filterByAction": "Filter by action",
+    "filterByEntity": "Filter by entity",
+    "allActions": "All actions",
+    "allEntities": "All entities",
+    "empty": "No activity logs yet",
+    "emptyDescription": "User actions will appear here",
+    "searchPlaceholder": "Search by user name..."
   },
   "dashboard": {
     "title": "Dashboard",
