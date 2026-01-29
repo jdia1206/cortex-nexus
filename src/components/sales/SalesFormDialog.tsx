@@ -13,9 +13,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, ShoppingCart, User, Mail, Loader2, Building2 } from 'lucide-react';
+import { Trash2, ShoppingCart, User, Mail, Loader2, Building2, CreditCard, Banknote, Bitcoin } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ProductCatalog } from './ProductCatalog';
 import { CustomerSelector } from './CustomerSelector';
 import { Tables } from '@/integrations/supabase/types';
@@ -23,6 +30,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+type PaymentMethod = 'cash' | 'card' | 'crypto';
 
 type Product = {
   id: string;
@@ -72,6 +81,8 @@ interface SalesFormDialogProps {
       subtotal: number;
       tax_amount: number;
       total: number;
+      status: string;
+      payment_method: string | null;
     };
     items: {
       product_id: string | null;
@@ -126,6 +137,8 @@ export function SalesFormDialog({
   const [discount, setDiscount] = useState(0);
   const [sendReceiptEmail, setSendReceiptEmail] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
 
   // Generate receipt number when dialog opens
   useEffect(() => {
@@ -217,6 +230,8 @@ export function SalesFormDialog({
         subtotal,
         tax_amount: taxAmount,
         total,
+        status: markAsPaid ? 'paid' : 'pending',
+        payment_method: markAsPaid && paymentMethod ? paymentMethod : null,
       },
       items: selectedProducts.map(item => ({
         product_id: item.product_id,
@@ -255,6 +270,8 @@ export function SalesFormDialog({
     setNotes('');
     setDiscount(0);
     setSendReceiptEmail(false);
+    setMarkAsPaid(false);
+    setPaymentMethod('');
   };
 
   const removeProduct = (productId: string) => {
@@ -522,6 +539,54 @@ export function SalesFormDialog({
                 <span>{t('sales.total')}:</span>
                 <span>{formatCurrency(total)}</span>
               </div>
+            </div>
+
+            {/* Mark as Paid & Payment Method */}
+            <div className="space-y-3 py-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="markAsPaid"
+                  checked={markAsPaid}
+                  onCheckedChange={(checked) => {
+                    setMarkAsPaid(checked === true);
+                    if (!checked) setPaymentMethod('');
+                  }}
+                />
+                <Label htmlFor="markAsPaid" className="flex items-center gap-2 text-sm cursor-pointer">
+                  {t('sales.markAsPaid')}
+                </Label>
+              </div>
+
+              {markAsPaid && (
+                <div className="space-y-2 pl-6">
+                  <Label className="text-sm">{t('sales.paymentMethod')}</Label>
+                  <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('sales.selectPaymentMethod')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">
+                        <div className="flex items-center gap-2">
+                          <Banknote className="h-4 w-4" />
+                          {t('sales.paymentCash')}
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="card">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4" />
+                          {t('sales.paymentCard')}
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="crypto">
+                        <div className="flex items-center gap-2">
+                          <Bitcoin className="h-4 w-4" />
+                          {t('sales.paymentCrypto')}
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             {/* Send Receipt Email Checkbox */}

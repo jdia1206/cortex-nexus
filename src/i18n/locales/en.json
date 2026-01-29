@@ -226,7 +226,13 @@
     "existingCustomer": "Existing Customer",
     "newCustomer": "New Customer",
     "searchCustomers": "Search customers by name, email, phone...",
-    "noCustomersFound": "No customers found"
+    "noCustomersFound": "No customers found",
+    "markAsPaid": "Mark as Paid",
+    "paymentMethod": "Payment Method",
+    "selectPaymentMethod": "Select payment method",
+    "paymentCash": "Cash",
+    "paymentCard": "Card",
+    "paymentCrypto": "Crypto"
   },
   "purchases": {
     "title": "Purchases",
