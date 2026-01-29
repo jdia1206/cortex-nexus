@@ -11,13 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RotateCcw, Package, Search } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -79,12 +72,12 @@ export function ReturnFormDialog({
   const [receiptSearch, setReceiptSearch] = useState('');
 
   // Filter sales by receipt number search
-  const filteredSales = sales.filter(s => 
-    s.invoice_number && 
-    s.invoice_number.toLowerCase().includes(receiptSearch.toLowerCase().trim())
-  );
-  
-  console.log('Receipt search:', receiptSearch, 'Total sales:', sales.length, 'Filtered:', filteredSales.length);
+  const filteredSales = receiptSearch.trim()
+    ? sales.filter(s => 
+        s.invoice_number && 
+        s.invoice_number.toLowerCase().includes(receiptSearch.toLowerCase().trim())
+      )
+    : sales;
 
   // Load sale items when sale is selected
   useEffect(() => {
@@ -215,7 +208,7 @@ export function ReturnFormDialog({
           {/* Select Sale */}
           <div className="space-y-2">
             <Label>{t('returns.selectSale')} *</Label>
-            <div className="relative mb-2">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={receiptSearch}
@@ -224,24 +217,39 @@ export function ReturnFormDialog({
                 className="pl-9"
               />
             </div>
-            <Select value={selectedSaleId} onValueChange={setSelectedSaleId}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('returns.selectSalePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredSales.length === 0 ? (
-                  <div className="py-6 text-center text-sm text-muted-foreground">
-                    {t('returns.noSalesFound')}
-                  </div>
-                ) : (
-                  filteredSales.map((sale) => (
-                    <SelectItem key={sale.id} value={sale.id}>
-                      {sale.invoice_number} - {sale.customers?.name || t('returns.noCustomer')}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            
+            {/* Live search results */}
+            <div className="border rounded-lg max-h-48 overflow-y-auto">
+              {filteredSales.length === 0 ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  {t('returns.noSalesFound')}
+                </div>
+              ) : (
+                filteredSales.slice(0, 10).map((sale) => (
+                  <button
+                    key={sale.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedSaleId(sale.id);
+                      setReceiptSearch(sale.invoice_number);
+                    }}
+                    className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
+                      selectedSaleId === sale.id ? 'bg-primary/10 text-primary' : ''
+                    }`}
+                  >
+                    <span className="font-medium">{sale.invoice_number}</span>
+                    <span className="text-muted-foreground ml-2">
+                      - {sale.customers?.name || t('returns.noCustomer')}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+            {filteredSales.length > 10 && (
+              <p className="text-xs text-muted-foreground text-center">
+                {t('returns.showingFirst', { count: 10 })} of {filteredSales.length}
+              </p>
+            )}
           </div>
 
           {/* Sale Items */}
