@@ -459,6 +459,8 @@
     "refunded": "Refunded",
     "selectSale": "Select Original Sale",
     "selectSalePlaceholder": "Choose the sale to return items from",
+    "searchReceipt": "Search by receipt number...",
+    "noSalesFound": "No sales found",
     "noCustomer": "No customer",
     "selectItems": "Select Items to Return",
     "purchased": "Purchased",
