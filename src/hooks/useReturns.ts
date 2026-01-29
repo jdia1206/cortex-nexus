@@ -115,11 +115,14 @@ export function useReturns() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, refund_amount }: { id: string; status: string; refund_amount?: number }) => {
+    mutationFn: async ({ id, status, refund_amount, reason }: { id: string; status: string; refund_amount?: number; reason?: string }) => {
       const updateData: Record<string, unknown> = { status };
       if (status === 'refunded' && refund_amount !== undefined) {
         updateData.refund_amount = refund_amount;
         updateData.refunded_at = new Date().toISOString();
+      }
+      if (reason !== undefined) {
+        updateData.reason = reason;
       }
 
       const { data, error } = await supabase

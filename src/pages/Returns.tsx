@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { ReturnFormDialog } from '@/components/returns/ReturnFormDialog';
-import { Download } from 'lucide-react';
+import { ReturnStatusDialog } from '@/components/returns/ReturnStatusDialog';
+import { Download, RefreshCw } from 'lucide-react';
 import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
 
 type Return = {
@@ -37,15 +38,27 @@ export default function Returns() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<Return | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const statusVariant = (status: string) => {
     switch (status) {
       case 'refunded': return 'default';
-      case 'approved': return 'secondary';
+      case 'approved': return 'default';
       case 'rejected': return 'destructive';
       case 'inspecting': return 'outline';
+      case 'pending': return 'secondary';
       default: return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'approved': return t('returns.statusProcessed');
+      case 'rejected': return t('returns.statusNotProcessed');
+      case 'pending': return t('returns.statusPending');
+      default: return t(`returns.${status}`);
     }
   };
 
@@ -102,8 +115,27 @@ export default function Returns() {
       header: t('returns.status'),
       render: (ret) => (
         <Badge variant={statusVariant(ret.status)}>
-          {t(`returns.${ret.status}`)}
+          {getStatusLabel(ret.status)}
         </Badge>
+      ),
+    },
+    {
+      key: 'change_status',
+      header: '',
+      render: (ret) => (
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedReturn(ret);
+            setStatusDialogOpen(true);
+          }}
+          className="gap-1"
+        >
+          <RefreshCw className="h-3 w-3" />
+          {t('returns.changeStatus')}
+        </Button>
       ),
     },
     {
@@ -128,6 +160,17 @@ export default function Returns() {
   const handleDelete = (ret: Return) => {
     setSelectedReturn(ret);
     setDeleteOpen(true);
+  };
+
+  const handleStatusChange = async (status: string, reason?: string) => {
+    if (!selectedReturn) return;
+    setIsUpdatingStatus(true);
+    try {
+      await updateStatus({ id: selectedReturn.id, status, reason });
+    } finally {
+      setIsUpdatingStatus(false);
+      setSelectedReturn(null);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -181,6 +224,17 @@ export default function Returns() {
           onConfirm={handleConfirmDelete}
           isLoading={isDeleting}
         />
+
+        {selectedReturn && (
+          <ReturnStatusDialog
+            open={statusDialogOpen}
+            onOpenChange={setStatusDialogOpen}
+            currentStatus={selectedReturn.status}
+            currentReason={selectedReturn.reason}
+            onSubmit={handleStatusChange}
+            isSubmitting={isUpdatingStatus}
+          />
+        )}
       </div>
     </AppLayout>
   );

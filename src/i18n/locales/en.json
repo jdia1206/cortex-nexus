@@ -479,7 +479,14 @@
     "searchPlaceholder": "Search by return number...",
     "created": "Return processed successfully",
     "updated": "Return updated successfully",
-    "deleted": "Return deleted successfully"
+    "deleted": "Return deleted successfully",
+    "changeStatus": "Change Status",
+    "changeStatusDescription": "Update the processing status of this return",
+    "statusPending": "Pending",
+    "statusProcessed": "Processed",
+    "statusNotProcessed": "Not Processed",
+    "reasonRequired": "Reason is required when marking as not processed",
+    "notProcessedReasonPlaceholder": "Please explain why this return was not processed..."
   },
   "transfers": {
     "title": "Inventory Transfers",
