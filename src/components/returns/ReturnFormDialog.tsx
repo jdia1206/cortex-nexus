@@ -218,37 +218,41 @@ export function ReturnFormDialog({
               />
             </div>
             
-            {/* Live search results */}
-            <div className="border rounded-lg max-h-48 overflow-y-auto">
-              {filteredSales.length === 0 ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {t('returns.noSalesFound')}
+            {/* Live search results - only show when searching */}
+            {receiptSearch.trim() && (
+              <>
+                <div className="border rounded-lg max-h-48 overflow-y-auto bg-background">
+                  {filteredSales.length === 0 ? (
+                    <div className="py-6 text-center text-sm text-muted-foreground">
+                      {t('returns.noSalesFound')}
+                    </div>
+                  ) : (
+                    filteredSales.slice(0, 10).map((sale) => (
+                      <button
+                        key={sale.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSaleId(sale.id);
+                          setReceiptSearch(sale.invoice_number);
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
+                          selectedSaleId === sale.id ? 'bg-primary/10 text-primary' : ''
+                        }`}
+                      >
+                        <span className="font-medium">{sale.invoice_number}</span>
+                        <span className="text-muted-foreground ml-2">
+                          - {sale.customers?.name || t('returns.noCustomer')}
+                        </span>
+                      </button>
+                    ))
+                  )}
                 </div>
-              ) : (
-                filteredSales.slice(0, 10).map((sale) => (
-                  <button
-                    key={sale.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSaleId(sale.id);
-                      setReceiptSearch(sale.invoice_number);
-                    }}
-                    className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
-                      selectedSaleId === sale.id ? 'bg-primary/10 text-primary' : ''
-                    }`}
-                  >
-                    <span className="font-medium">{sale.invoice_number}</span>
-                    <span className="text-muted-foreground ml-2">
-                      - {sale.customers?.name || t('returns.noCustomer')}
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-            {filteredSales.length > 10 && (
-              <p className="text-xs text-muted-foreground text-center">
-                {t('returns.showingFirst', { count: 10 })} of {filteredSales.length}
-              </p>
+                {filteredSales.length > 10 && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {t('returns.showingFirst', { count: 10 })} of {filteredSales.length}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
