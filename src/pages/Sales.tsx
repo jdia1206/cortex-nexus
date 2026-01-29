@@ -74,6 +74,8 @@ export default function Sales() {
     }
   };
 
+  const { create: createCustomer } = useCustomers();
+
   const handleSubmit = async (data: {
     invoice: {
       invoice_number: string;
@@ -92,25 +94,44 @@ export default function Sales() {
       subtotal: number;
     }[];
     customerInfo: {
+      customerType: 'person' | 'company';
+      companyName: string;
+      taxId: string;
+      contactPerson: string;
       firstName: string;
       lastName: string;
       email: string;
       phone: string;
     };
   }) => {
-    // Store customer info in notes for now (can be extended to create/link customer)
-    const customerNote = data.customerInfo.firstName || data.customerInfo.lastName 
-      ? `Customer: ${data.customerInfo.firstName} ${data.customerInfo.lastName}`.trim() +
-        (data.customerInfo.email ? ` | Email: ${data.customerInfo.email}` : '') +
-        (data.customerInfo.phone ? ` | Phone: ${data.customerInfo.phone}` : '')
-      : '';
+    let customerId = data.invoice.customer_id;
 
-    const notes = [customerNote, data.invoice.notes].filter(Boolean).join('\n');
+    // If no existing customer selected and new customer info provided, create customer
+    if (!customerId && (data.customerInfo.firstName || data.customerInfo.lastName || data.customerInfo.companyName)) {
+      const isCompany = data.customerInfo.customerType === 'company';
+      const customerName = isCompany 
+        ? data.customerInfo.companyName 
+        : `${data.customerInfo.firstName || ''} ${data.customerInfo.lastName || ''}`.trim();
+
+      if (customerName) {
+        const newCustomer = await createCustomer({
+          customer_type: data.customerInfo.customerType,
+          name: customerName,
+          first_name: isCompany ? null : data.customerInfo.firstName || null,
+          last_name: isCompany ? null : data.customerInfo.lastName || null,
+          tax_id: isCompany ? data.customerInfo.taxId || null : null,
+          contact_person: isCompany ? data.customerInfo.contactPerson || null : null,
+          email: data.customerInfo.email || null,
+          phone: data.customerInfo.phone || null,
+        });
+        customerId = newCustomer.id;
+      }
+    }
 
     await create({
       invoice: {
         ...data.invoice,
-        notes: notes || null,
+        customer_id: customerId,
       },
       items: data.items,
     });
