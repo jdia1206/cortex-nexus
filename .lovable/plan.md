@@ -1,113 +1,91 @@
 
-Goal
-- Fix the /admin redirect-to-/dashboard behavior while the user is already logged in by eliminating a timing/race condition in the admin “gate” logic.
 
-What’s happening (root cause)
-- /admin is protected by AdminProtectedRoute.
-- AdminProtectedRoute immediately redirects to /dashboard when `isPlatformAdmin` is false and `adminLoading` is false.
-- Your AdminProvider currently sets `isLoading(true)` inside a `useEffect` when the route changes (`pathname` dependency).
-- React `useEffect` runs after the render commit, so on the first render after navigating to /admin, `adminLoading` may still be false from the previous route while the new admin-check hasn’t started yet.
-- That creates a brief window where:
-  - user is logged in
-  - adminLoading is false
-  - isPlatformAdmin is still false (stale)
-  - AdminProtectedRoute redirects to /dashboard before the new check can begin
+## Export Database ER Diagram to Documentation
 
-Why the “pathname dependency” diff didn’t fully solve it
-- It ensures a re-check happens, but it doesn’t prevent the redirect during the first render immediately after navigation because the re-check starts too late (effect timing).
+I'll add the database ER diagram to the project documentation by creating a dedicated `docs` folder with the database schema documentation.
 
-Proposed solution (design)
-- Add a “check freshness” concept to AdminContext so the route guard can know whether the admin status is valid for the current logged-in user + navigation attempt.
-- Key idea: compute a stable “current key” for the needed admin check and compare it to the last successfully completed key.
-  - Example key: `${user?.id ?? 'anon'}`
-  - Optionally include `pathname` if you truly want a re-check on every route, but the safer pattern is:
-    - re-check on user id changes
-    - provide an explicit `refreshAdminStatus()` function
-    - optionally re-check on focus/visibility change
-- In AdminContext, expose:
-  - `isLoading` (true if a check is in progress OR if status is “stale” for the current user)
-  - `refreshAdminStatus()` (force re-check)
-  - (optional) `lastError` (to help debug RLS/permission issues)
+---
 
-Then update AdminProtectedRoute so that:
-- If auth is still loading, show loading.
-- If admin status is stale or currently checking, show loading (do NOT redirect).
-- Only after a “fresh” check is complete:
-  - if not logged in -> redirect to /login
-  - if logged in but not platform admin -> redirect to /dashboard
-  - else render the admin page
+### What will be created
 
-Implementation steps (code changes)
-1) Update AdminContext.tsx
-   - Add internal state:
-     - `checkedKey` (string | null): the last key for which the admin status has been confirmed
-     - `checkingKey` (string | null): the key currently being checked (optional, but helpful)
-     - `lastError` (string | null) (optional)
-   - Define `currentKey` as:
-     - if user exists: `user.id`
-     - else: null
-   - Compute a derived boolean:
-     - `isStale = user != null && checkedKey !== currentKey`
-   - Make the effective loading state:
-     - `effectiveLoading = isLoading || isStale`
-   - Adjust the check function:
-     - When starting a check for a user:
-       - set `isLoading(true)`
-       - clear `lastError`
-       - set `checkingKey = currentKey`
-     - Run the `platform_admins` query
-     - On success:
-       - set flags (isPlatformAdmin/isSuperAdmin/platformRole)
-       - set `checkedKey = currentKey`
-     - On failure:
-       - store error for debugging
-       - set `checkedKey = currentKey` anyway (important to avoid infinite “loading”; alternatively keep stale but then you must show an error UI)
-       - set admin flags to false
-     - finally:
-       - set `isLoading(false)`
-       - set `checkingKey = null`
-   - Change when checks run:
-     - Always check when `user?.id` changes (this is the main trigger).
-     - Keep the current `pathname` trigger ONLY if you truly need it, but it’s not required once “refresh” exists.
-   - Add a `refreshAdminStatus` function to context that triggers the check again (can be called from admin pages, or from a “Try again” button if needed).
+**1. New `docs/` folder structure**
+- `docs/DATABASE.md` - Complete database documentation with the ER diagram
 
-2) Update AdminProtectedRoute.tsx
-   - Obtain from context: `isLoading` (effective) and optionally `lastError`.
-   - Guard logic:
-     - If `authLoading` OR `adminLoading` => show the loading spinner (no redirects).
-     - If `!user` => redirect to /login.
-     - If `!isPlatformAdmin` => redirect to /dashboard.
-     - If `requireSuperAdmin && !isSuperAdmin` => redirect to /admin.
-     - Else render children.
-   - Optional: if `lastError` exists, show a minimal “Admin access check failed” message with a “Retry” button calling `refreshAdminStatus()` rather than redirecting (helps diagnose permission/RLS errors without bouncing).
+**2. Updated README.md**
+- Add a "Database Documentation" section linking to the new docs
 
-3) Add targeted debug output (temporary)
-   - In AdminContext, when the query fails, log:
-     - user id
-     - error message/code
-   - In AdminProtectedRoute, if redirecting to /dashboard due to `!isPlatformAdmin`, log a single debug line to confirm it is a genuine “not admin” result rather than a stale state.
+---
 
-4) Verification checklist (what you should test)
-   - While logged in, type `/admin` in the address bar:
-     - Expected: brief “Loading…” then AdminDashboard renders.
-   - Refresh on `/admin`:
-     - Expected: still works after reload.
-   - Navigate /dashboard -> /admin using in-app navigation or manual URL change:
-     - Expected: no bounce back to /dashboard.
-   - If you remove your platform_admins row (later), verify it properly redirects to /dashboard (expected behavior).
-   - Confirm non-admin users are redirected away from /admin.
+### Documentation Content
 
-Potential backend/RLS edge case (secondary)
-- If the database policies on `platform_admins` prevent the current user from reading their row, the select will fail or return null and you will be redirected.
-- The plan above will surface this as an error (instead of a silent redirect loop), and we can adjust policies later if needed.
+The `docs/DATABASE.md` file will include:
 
-Scope boundaries
-- This plan focuses on stabilizing access control timing and reducing redirect flicker.
-- It does not remove the admin panel; it makes it reliably accessible to authorized users.
+1. **Overview** - Brief description of the multi-tenant architecture
+2. **ER Diagram** - Mermaid diagram showing all table relationships
+3. **Table Descriptions** - Summary of each table's purpose
+4. **Normalization Notes** - The 3NF design decisions
 
-Files to change
-- src/contexts/AdminContext.tsx
-- src/components/admin/AdminProtectedRoute.tsx
+---
 
-Rollback strategy
-- If anything goes wrong, revert AdminProtectedRoute to always show “Loading…” (no redirects) when there is uncertainty; that guarantees no bounce loops, then we refine.
+### ER Diagram (to be included)
+
+The Mermaid diagram will render automatically on GitHub and other Markdown viewers:
+
+```text
+erDiagram
+    tenants ||--o{ profiles : "has"
+    tenants ||--o{ user_roles : "has"
+    tenants ||--o{ branches : "has"
+    tenants ||--o{ warehouses : "has"
+    tenants ||--o{ products : "has"
+    tenants ||--o{ product_categories : "has"
+    tenants ||--o{ inventory : "has"
+    tenants ||--o{ customers : "has"
+    tenants ||--o{ suppliers : "has"
+    tenants ||--o{ sales_invoices : "has"
+    tenants ||--o{ purchase_invoices : "has"
+    tenants ||--|| subscriptions : "has"
+    
+    branches ||--o{ warehouses : "contains"
+    branches ||--o{ sales_invoices : "processes"
+    
+    warehouses ||--o{ inventory : "stores"
+    warehouses ||--o{ purchase_invoices : "receives"
+    
+    products ||--o{ inventory : "tracked in"
+    products ||--o{ sales_invoice_items : "sold in"
+    products ||--o{ purchase_invoice_items : "purchased in"
+    products }o--|| product_categories : "belongs to"
+    
+    customers ||--o{ sales_invoices : "places"
+    suppliers ||--o{ purchase_invoices : "fulfills"
+    
+    sales_invoices ||--o{ sales_invoice_items : "contains"
+    purchase_invoices ||--o{ purchase_invoice_items : "contains"
+    
+    subscription_plans ||--o{ subscriptions : "defines"
+    
+    support_tickets ||--o{ ticket_messages : "has"
+    
+    platform_admins ||--o{ admin_audit_log : "creates"
+    platform_admins ||--o{ platform_announcements : "authors"
+```
+
+---
+
+### Files to create/modify
+
+| File | Action |
+|------|--------|
+| `docs/DATABASE.md` | Create - Full database documentation |
+| `README.md` | Update - Add link to database docs |
+
+---
+
+### Why this approach?
+
+- **GitHub-friendly**: Mermaid diagrams render natively on GitHub
+- **Version controlled**: Documentation stays in sync with code
+- **Shareable**: Anyone with repo access can view the diagram
+- **Maintainable**: Easy to update as schema evolves
+
