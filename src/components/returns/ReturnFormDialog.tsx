@@ -81,8 +81,10 @@ export function ReturnFormDialog({
   // Filter sales by receipt number search
   const filteredSales = sales.filter(s => 
     s.invoice_number && 
-    s.invoice_number.toLowerCase().includes(receiptSearch.toLowerCase())
+    s.invoice_number.toLowerCase().includes(receiptSearch.toLowerCase().trim())
   );
+  
+  console.log('Receipt search:', receiptSearch, 'Total sales:', sales.length, 'Filtered:', filteredSales.length);
 
   // Load sale items when sale is selected
   useEffect(() => {
@@ -194,6 +196,7 @@ export function ReturnFormDialog({
     setReturnItems([]);
     setReason('');
     setNotes('');
+    setReceiptSearch('');
   };
 
   const canSubmit = selectedSaleId && returnItems.length > 0;
