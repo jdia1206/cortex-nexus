@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Trash2, RotateCcw, Package } from 'lucide-react';
+import { RotateCcw, Package, Search } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { CreateReturnData } from '@/hooks/useReturns';
@@ -76,6 +76,13 @@ export function ReturnFormDialog({
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [receiptSearch, setReceiptSearch] = useState('');
+
+  // Filter sales by receipt number search
+  const filteredSales = sales.filter(s => 
+    s.invoice_number && 
+    s.invoice_number.toLowerCase().includes(receiptSearch.toLowerCase())
+  );
 
   // Load sale items when sale is selected
   useEffect(() => {
@@ -205,16 +212,31 @@ export function ReturnFormDialog({
           {/* Select Sale */}
           <div className="space-y-2">
             <Label>{t('returns.selectSale')} *</Label>
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={receiptSearch}
+                onChange={(e) => setReceiptSearch(e.target.value)}
+                placeholder={t('returns.searchReceipt')}
+                className="pl-9"
+              />
+            </div>
             <Select value={selectedSaleId} onValueChange={setSelectedSaleId}>
               <SelectTrigger>
                 <SelectValue placeholder={t('returns.selectSalePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {sales.filter(s => s.invoice_number).map((sale) => (
-                  <SelectItem key={sale.id} value={sale.id}>
-                    {sale.invoice_number} - {sale.customers?.name || t('returns.noCustomer')}
-                  </SelectItem>
-                ))}
+                {filteredSales.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    {t('returns.noSalesFound')}
+                  </div>
+                ) : (
+                  filteredSales.map((sale) => (
+                    <SelectItem key={sale.id} value={sale.id}>
+                      {sale.invoice_number} - {sale.customers?.name || t('returns.noCustomer')}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
