@@ -17,7 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PurchasesFormDialog } from '@/components/purchases/PurchasesFormDialog';
-import { CheckCircle, XCircle, MoreHorizontal } from 'lucide-react';
+import { CheckCircle, XCircle, MoreHorizontal, Download } from 'lucide-react';
+import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
 
 type PurchaseInvoice = {
   id: string;
@@ -38,7 +39,7 @@ export default function Purchases() {
   const { suppliers } = useSuppliers();
   const { products } = useProducts();
   const { warehouses } = useWarehouses();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, currency } = useCurrency();
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -46,6 +47,30 @@ export default function Purchases() {
 
   const handleStatusChange = async (purchase: PurchaseInvoice, newStatus: string) => {
     await updateStatus({ id: purchase.id, status: newStatus });
+  };
+
+  const handleDownloadPDF = (purchase: PurchaseInvoice) => {
+    const doc = generateInvoicePDF(
+      'purchase',
+      {
+        invoiceNumber: purchase.invoice_number,
+        date: purchase.invoice_date,
+        supplier: purchase.suppliers ? { name: purchase.suppliers.name } : undefined,
+        items: [],
+        subtotal: Number(purchase.subtotal),
+        taxAmount: Number(purchase.tax_amount),
+        total: Number(purchase.total),
+      },
+      {
+        name: tenant?.name || 'Company',
+        address: tenant?.address || undefined,
+        phone: tenant?.phone || undefined,
+        email: tenant?.email || undefined,
+        taxId: tenant?.tax_id || undefined,
+      },
+      currency.symbol
+    );
+    doc.save(`${purchase.invoice_number}.pdf`);
   };
 
   const columns: Column<PurchaseInvoice>[] = [
@@ -97,6 +122,23 @@ export default function Purchases() {
             </DropdownMenu>
           )}
         </div>
+      ),
+    },
+    {
+      key: 'download',
+      header: '',
+      render: (purchase) => (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownloadPDF(purchase);
+          }}
+          title={t('common.export')}
+        >
+          <Download className="h-4 w-4" />
+        </Button>
       ),
     },
   ];

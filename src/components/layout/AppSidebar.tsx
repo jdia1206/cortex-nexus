@@ -13,6 +13,9 @@ import {
   CreditCard,
   Building2,
   ChevronDown,
+  RotateCcw,
+  ArrowRightLeft,
+  FileText,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,8 +42,11 @@ const mainNavItems = [
   { key: 'inventory', icon: Warehouse, url: '/inventory' },
   { key: 'sales', icon: ShoppingCart, url: '/sales' },
   { key: 'purchases', icon: ShoppingBag, url: '/purchases' },
+  { key: 'returns', icon: RotateCcw, url: '/returns' },
+  { key: 'transfers', icon: ArrowRightLeft, url: '/transfers' },
   { key: 'customers', icon: Users, url: '/customers' },
   { key: 'suppliers', icon: Truck, url: '/suppliers' },
+  { key: 'reports', icon: FileText, url: '/reports' },
 ];
 
 const settingsNavItems = [

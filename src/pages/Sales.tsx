@@ -7,8 +7,11 @@ import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { SalesFormDialog } from '@/components/sales/SalesFormDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { Download } from 'lucide-react';
+import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
 
 type SalesInvoice = {
   id: string;
@@ -27,12 +30,37 @@ export default function Sales() {
   const { profile, tenant, signOut } = useAuth();
   const { sales, isLoading, create, delete: deleteSale, isCreating, isDeleting } = useSales();
   const { products } = useProducts();
-  const { customers } = useCustomers();
-  const { formatCurrency } = useCurrency();
+  const { customers, create: createCustomer } = useCustomers();
+  const { formatCurrency, currency } = useCurrency();
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SalesInvoice | null>(null);
+
+  const handleDownloadPDF = (sale: SalesInvoice) => {
+    const doc = generateInvoicePDF(
+      'sale',
+      {
+        invoiceNumber: sale.invoice_number,
+        date: sale.invoice_date,
+        customer: sale.customers ? { name: sale.customers.name } : undefined,
+        items: [],
+        subtotal: Number(sale.subtotal),
+        taxAmount: Number(sale.tax_amount),
+        discount: Number(sale.discount_amount),
+        total: Number(sale.total),
+      },
+      {
+        name: tenant?.name || 'Company',
+        address: tenant?.address || undefined,
+        phone: tenant?.phone || undefined,
+        email: tenant?.email || undefined,
+        taxId: tenant?.tax_id || undefined,
+      },
+      currency.symbol
+    );
+    doc.save(`${sale.invoice_number}.pdf`);
+  };
 
   const columns: Column<SalesInvoice>[] = [
     { key: 'invoice_number', header: t('sales.invoiceNumber') },
@@ -59,6 +87,23 @@ export default function Sales() {
         </Badge>
       ),
     },
+    {
+      key: 'download',
+      header: '',
+      render: (sale) => (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownloadPDF(sale);
+          }}
+          title={t('common.export')}
+        >
+          <Download className="h-4 w-4" />
+        </Button>
+      ),
+    },
   ];
 
   const handleDelete = (sale: SalesInvoice) => {
@@ -74,7 +119,7 @@ export default function Sales() {
     }
   };
 
-  const { create: createCustomer } = useCustomers();
+  
 
   const handleSubmit = async (data: {
     invoice: {

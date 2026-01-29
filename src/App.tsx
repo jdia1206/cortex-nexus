@@ -19,6 +19,9 @@ import Suppliers from "./pages/Suppliers";
 import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Purchases from "./pages/Purchases";
+import Returns from "./pages/Returns";
+import Transfers from "./pages/Transfers";
+import Reports from "./pages/Reports";
 import Company from "./pages/settings/Company";
 import Users from "./pages/settings/Users";
 import Branches from "./pages/settings/Branches";
@@ -86,6 +89,21 @@ const App = () => (
               <Route path="/purchases" element={
                 <ProtectedRoute>
                   <Purchases />
+                </ProtectedRoute>
+              } />
+              <Route path="/returns" element={
+                <ProtectedRoute>
+                  <Returns />
+                </ProtectedRoute>
+              } />
+              <Route path="/transfers" element={
+                <ProtectedRoute>
+                  <Transfers />
+                </ProtectedRoute>
+              } />
+              <Route path="/reports" element={
+                <ProtectedRoute>
+                  <Reports />
                 </ProtectedRoute>
               } />
               
