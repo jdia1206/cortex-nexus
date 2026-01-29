@@ -350,7 +350,12 @@
     "user": "User",
     "searchPlaceholder": "Search by name...",
     "empty": "No team members",
-    "emptyDescription": "Invite team members to collaborate"
+    "emptyDescription": "Invite team members to collaborate",
+    "invite": "Add Employee",
+    "inviteDescription": "Create a new user account for your team member",
+    "selectRole": "Select role",
+    "createUser": "Create User",
+    "created": "User created successfully"
   },
   "branches": {
     "title": "Branches",

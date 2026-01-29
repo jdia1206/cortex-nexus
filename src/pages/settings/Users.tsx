@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout';
@@ -5,6 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, DataTable, Column } from '@/components/shared';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
+import { InviteUserDialog } from '@/components/settings/InviteUserDialog';
 
 type UserWithRole = {
   id: string;
@@ -16,8 +20,9 @@ type UserWithRole = {
 export default function Users() {
   const { t } = useTranslation();
   const { profile, tenant, signOut, userRole } = useAuth();
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, refetch } = useQuery({
     queryKey: ['users', profile?.tenant_id],
     queryFn: async () => {
       const { data: profiles, error: profilesError } = await supabase
@@ -55,6 +60,8 @@ export default function Users() {
     },
   ];
 
+  const isAdmin = userRole === 'admin';
+
   return (
     <AppLayout
       companyName={tenant?.name}
@@ -65,6 +72,9 @@ export default function Users() {
         <PageHeader
           title={t('users.title')}
           description={t('users.description')}
+          actionLabel={isAdmin ? t('users.invite') : undefined}
+          onAction={isAdmin ? () => setInviteDialogOpen(true) : undefined}
+          actionIcon={<UserPlus className="h-4 w-4" />}
         />
 
         <DataTable
@@ -75,6 +85,12 @@ export default function Users() {
           searchPlaceholder={t('users.searchPlaceholder')}
           emptyTitle={t('users.empty')}
           emptyDescription={t('users.emptyDescription')}
+        />
+
+        <InviteUserDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          onSuccess={() => refetch()}
         />
       </div>
     </AppLayout>
