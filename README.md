@@ -1,5 +1,13 @@
 # Welcome to your Lovable project
 
+## Database Documentation
+
+For the complete database schema with ER diagrams, table descriptions, and normalization notes, see:
+
+📊 **[Database Schema Documentation](./docs/DATABASE.md)**
+
+---
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
