@@ -202,6 +202,82 @@ export type Database = {
           },
         ]
       }
+      inventory_transfers: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          destination_warehouse_id: string
+          expected_arrival: string | null
+          id: string
+          notes: string | null
+          received_at: string | null
+          source_warehouse_id: string
+          status: Database["public"]["Enums"]["transfer_status"]
+          tenant_id: string
+          transfer_date: string
+          transfer_number: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_warehouse_id: string
+          expected_arrival?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          source_warehouse_id: string
+          status?: Database["public"]["Enums"]["transfer_status"]
+          tenant_id: string
+          transfer_date?: string
+          transfer_number: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_warehouse_id?: string
+          expected_arrival?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          source_warehouse_id?: string
+          status?: Database["public"]["Enums"]["transfer_status"]
+          tenant_id?: string
+          transfer_date?: string
+          transfer_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transfers_destination_warehouse_id_fkey"
+            columns: ["destination_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transfers_source_warehouse_id_fkey"
+            columns: ["source_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transfers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_admins: {
         Row: {
           created_at: string
@@ -546,6 +622,223 @@ export type Database = {
           },
           {
             foreignKeyName: "purchase_invoices_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      return_items: {
+        Row: {
+          condition: string | null
+          created_at: string
+          id: string
+          original_quantity: number
+          product_id: string | null
+          restock: boolean | null
+          return_id: string
+          return_quantity: number
+          subtotal: number
+          tax_rate: number
+          tenant_id: string
+          unit_price: number
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string
+          id?: string
+          original_quantity?: number
+          product_id?: string | null
+          restock?: boolean | null
+          return_id: string
+          return_quantity?: number
+          subtotal?: number
+          tax_rate?: number
+          tenant_id: string
+          unit_price?: number
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string
+          id?: string
+          original_quantity?: number
+          product_id?: string | null
+          restock?: boolean | null
+          return_id?: string
+          return_quantity?: number
+          subtotal?: number
+          tax_rate?: number
+          tenant_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      returns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          notes: string | null
+          reason: string | null
+          refund_amount: number | null
+          refunded_at: string | null
+          return_date: string
+          return_number: string
+          sales_invoice_id: string
+          status: Database["public"]["Enums"]["return_status"]
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          refund_amount?: number | null
+          refunded_at?: string | null
+          return_date?: string
+          return_number: string
+          sales_invoice_id: string
+          status?: Database["public"]["Enums"]["return_status"]
+          subtotal?: number
+          tax_amount?: number
+          tenant_id: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          refund_amount?: number | null
+          refunded_at?: string | null
+          return_date?: string
+          return_number?: string
+          sales_invoice_id?: string
+          status?: Database["public"]["Enums"]["return_status"]
+          subtotal?: number
+          tax_amount?: number
+          tenant_id?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_sales_invoice_id_fkey"
+            columns: ["sales_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      returns_inventory: {
+        Row: {
+          condition: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          product_id: string
+          quantity: number
+          return_item_id: string | null
+          tenant_id: string
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          quantity?: number
+          return_item_id?: string | null
+          tenant_id: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          quantity?: number
+          return_item_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_inventory_return_item_id_fkey"
+            columns: ["return_item_id"]
+            isOneToOne: false
+            referencedRelation: "return_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_inventory_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_inventory_warehouse_id_fkey"
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "warehouses"
@@ -975,6 +1268,61 @@ export type Database = {
           },
         ]
       }
+      transfer_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          product_id: string
+          quantity_received: number | null
+          quantity_sent: number
+          tenant_id: string
+          transfer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          quantity_received?: number | null
+          quantity_sent?: number
+          tenant_id: string
+          transfer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          quantity_received?: number | null
+          quantity_sent?: number
+          tenant_id?: string
+          transfer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_items_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_transfers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1095,6 +1443,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       platform_role: "super_admin" | "support_agent"
+      return_status:
+        | "pending"
+        | "inspecting"
+        | "approved"
+        | "rejected"
+        | "refunded"
       subscription_status:
         | "active"
         | "canceled"
@@ -1109,6 +1463,7 @@ export type Database = {
         | "waiting_customer"
         | "resolved"
         | "closed"
+      transfer_status: "pending" | "in_transit" | "received" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1238,6 +1593,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       platform_role: ["super_admin", "support_agent"],
+      return_status: [
+        "pending",
+        "inspecting",
+        "approved",
+        "rejected",
+        "refunded",
+      ],
       subscription_status: [
         "active",
         "canceled",
@@ -1254,6 +1616,7 @@ export const Constants = {
         "resolved",
         "closed",
       ],
+      transfer_status: ["pending", "in_transit", "received", "cancelled"],
     },
   },
 } as const
