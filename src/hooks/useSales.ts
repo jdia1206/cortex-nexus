@@ -35,7 +35,7 @@ export function useSales() {
       invoice: Omit<TablesInsert<'sales_invoices'>, 'tenant_id' | 'created_by'>;
       items: Omit<TablesInsert<'sales_invoice_items'>, 'tenant_id' | 'invoice_id'>[];
     }) => {
-      // Create invoice
+      // Create invoice with status and payment_method
       const { data: invoiceData, error: invoiceError } = await supabase
         .from('sales_invoices')
         .insert({ 
@@ -70,11 +70,15 @@ export function useSales() {
     },
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, status, payment_method }: { id: string; status: string; payment_method?: string | null }) => {
+      const updateData: Record<string, unknown> = { status };
+      if (payment_method !== undefined) {
+        updateData.payment_method = payment_method;
+      }
       const { data, error } = await supabase
         .from('sales_invoices')
-        .update({ status })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -112,9 +116,10 @@ export function useSales() {
     isLoading: query.isLoading,
     error: query.error,
     create: createMutation.mutateAsync,
-    updateStatus: updateStatusMutation.mutateAsync,
+    update: updateMutation.mutateAsync,
     delete: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 }
