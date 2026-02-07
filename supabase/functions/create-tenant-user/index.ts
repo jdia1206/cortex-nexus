@@ -116,13 +116,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Add user to tenant using the database function
-    const { error: addError } = await supabaseAdmin.rpc('add_user_to_tenant', {
-      p_user_id: newUser.user.id,
-      p_tenant_id: tenantId,
-      p_full_name: fullName,
-      p_role: role,
-    });
+    // Add profile directly (service role bypasses RLS)
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        user_id: newUser.user.id,
+        tenant_id: tenantId,
+        full_name: fullName,
+      });
+
+    if (profileError) {
+      console.error('Error creating profile:', profileError);
+      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
+      return new Response(
+        JSON.stringify({ error: 'Failed to create user profile' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Assign role directly
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({
+        user_id: newUser.user.id,
+        tenant_id: tenantId,
+        role: role,
+      });
+
+    const addError = roleError;
 
     if (addError) {
       console.error('Error adding user to tenant:', addError);
