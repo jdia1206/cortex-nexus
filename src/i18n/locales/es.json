@@ -443,4 +443,23 @@
     "updated": "Devolución actualizada exitosamente",
     "deleted": "Devolución eliminada exitosamente"
   }
+  ,"pos": {
+    "title": "Punto de Venta",
+    "searchProducts": "Buscar productos por nombre o SKU...",
+    "allCategories": "Todos",
+    "cart": "Carrito",
+    "clearCart": "Vaciar Carrito",
+    "completeSale": "Completar Venta",
+    "saleComplete": "¡Venta Completada!",
+    "newSale": "Nueva Venta",
+    "quickCustomer": "Cliente (opcional)",
+    "noCustomer": "Sin cliente",
+    "noProductsInCategory": "No se encontraron productos",
+    "itemAdded": "Agregado al carrito",
+    "viewAllSales": "Todas las Ventas",
+    "openPOS": "Abrir POS",
+    "outOfStock": "Sin stock",
+    "inStock": "en stock",
+    "maxStock": "Stock máximo alcanzado"
+  }
 }
