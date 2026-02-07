@@ -524,6 +524,25 @@
     "updated": "Transfer updated successfully",
     "deleted": "Transfer deleted successfully"
   },
+  "pos": {
+    "title": "Point of Sale",
+    "searchProducts": "Search products by name or SKU...",
+    "allCategories": "All",
+    "cart": "Cart",
+    "clearCart": "Clear Cart",
+    "completeSale": "Complete Sale",
+    "saleComplete": "Sale Complete!",
+    "newSale": "New Sale",
+    "quickCustomer": "Customer (optional)",
+    "noCustomer": "No customer",
+    "noProductsInCategory": "No products found",
+    "itemAdded": "Added to cart",
+    "viewAllSales": "All Sales",
+    "openPOS": "Open POS",
+    "outOfStock": "Out of stock",
+    "inStock": "in stock",
+    "maxStock": "Maximum stock reached"
+  },
   "reports": {
     "title": "Reports",
     "description": "Generate and download PDF reports",
