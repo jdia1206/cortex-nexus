@@ -460,6 +460,8 @@
     "openPOS": "Abrir POS",
     "outOfStock": "Sin stock",
     "inStock": "en stock",
-    "maxStock": "Stock máximo alcanzado"
+    "maxStock": "Stock máximo alcanzado",
+    "newCustomer": "Nuevo Cliente",
+    "createAndSelect": "Crear y Seleccionar"
   }
 }
