@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,10 @@ import {
   Minus,
   ShoppingCart,
   Search,
+  UserPlus,
+  Building2,
+  User,
+  ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -49,8 +53,31 @@ interface POSCartProps {
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
   onCompleteSale: (paymentMethod: PaymentMethod, customerId: string | null, discount: number) => void;
+  onCreateCustomer: (data: Omit<TablesInsert<'customers'>, 'tenant_id'>) => Promise<Customer>;
   isSubmitting: boolean;
 }
+
+interface NewCustomerForm {
+  customerType: 'person' | 'company';
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  taxId: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+}
+
+const emptyCustomerForm: NewCustomerForm = {
+  customerType: 'person',
+  firstName: '',
+  lastName: '',
+  companyName: '',
+  taxId: '',
+  contactPerson: '',
+  email: '',
+  phone: '',
+};
 
 export default function POSCart({
   items,
@@ -59,6 +86,7 @@ export default function POSCart({
   onRemoveItem,
   onClearCart,
   onCompleteSale,
+  onCreateCustomer,
   isSubmitting,
 }: POSCartProps) {
   const { t } = useTranslation();
@@ -67,6 +95,9 @@ export default function POSCart({
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
   const [customerOpen, setCustomerOpen] = useState(false);
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [newCustomer, setNewCustomer] = useState<NewCustomerForm>(emptyCustomerForm);
+  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
 
   const subtotal = items.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
@@ -89,6 +120,41 @@ export default function POSCart({
     setPaymentMethod(null);
     setSelectedCustomerId(null);
     setDiscount(0);
+  };
+
+  const isNewCustomerValid = () => {
+    if (newCustomer.customerType === 'person') {
+      return newCustomer.firstName.trim() !== '' || newCustomer.lastName.trim() !== '';
+    }
+    return newCustomer.companyName.trim() !== '';
+  };
+
+  const handleCreateCustomer = async () => {
+    if (!isNewCustomerValid()) return;
+    setIsCreatingCustomer(true);
+    try {
+      const isCompany = newCustomer.customerType === 'company';
+      const name = isCompany
+        ? newCustomer.companyName.trim()
+        : `${newCustomer.firstName.trim()} ${newCustomer.lastName.trim()}`.trim();
+
+      const created = await onCreateCustomer({
+        customer_type: newCustomer.customerType,
+        name,
+        first_name: isCompany ? null : newCustomer.firstName.trim() || null,
+        last_name: isCompany ? null : newCustomer.lastName.trim() || null,
+        tax_id: isCompany ? newCustomer.taxId.trim() || null : null,
+        contact_person: isCompany ? newCustomer.contactPerson.trim() || null : null,
+        email: newCustomer.email.trim() || null,
+        phone: newCustomer.phone.trim() || null,
+      });
+
+      setSelectedCustomerId(created.id);
+      setShowNewCustomer(false);
+      setNewCustomer(emptyCustomerForm);
+    } finally {
+      setIsCreatingCustomer(false);
+    }
   };
 
   const paymentOptions: { method: PaymentMethod; icon: React.ReactNode; label: string }[] = [
@@ -182,40 +248,169 @@ export default function POSCart({
           <Label className="text-xs font-medium text-muted-foreground">
             {t('pos.quickCustomer')} <span className="text-destructive">*</span>
           </Label>
-          <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
-            <PopoverTrigger asChild>
+
+          {showNewCustomer ? (
+            /* Inline New Customer Form */
+            <div className="rounded-lg border p-3 space-y-3 bg-muted/30">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setShowNewCustomer(false)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                  {t('common.back')}
+                </button>
+                <span className="text-xs font-medium">{t('pos.newCustomer')}</span>
+              </div>
+
+              {/* Person / Company Toggle */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setNewCustomer({ ...newCustomer, customerType: 'person' })}
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-lg border-2 p-2 text-xs font-medium transition-all',
+                    newCustomer.customerType === 'person'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  {t('customers.person')}
+                </button>
+                <button
+                  onClick={() => setNewCustomer({ ...newCustomer, customerType: 'company' })}
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-lg border-2 p-2 text-xs font-medium transition-all',
+                    newCustomer.customerType === 'company'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  <Building2 className="h-3.5 w-3.5" />
+                  {t('customers.company')}
+                </button>
+              </div>
+
+              {newCustomer.customerType === 'person' ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder={t('customers.firstNamePlaceholder')}
+                    value={newCustomer.firstName}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, firstName: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    placeholder={t('customers.lastNamePlaceholder')}
+                    value={newCustomer.lastName}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, lastName: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              ) : (
+                <>
+                  <Input
+                    placeholder={t('customers.companyNamePlaceholder')}
+                    value={newCustomer.companyName}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, companyName: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder={t('customers.taxIdPlaceholder')}
+                      value={newCustomer.taxId}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, taxId: e.target.value })}
+                      className="h-8 text-xs"
+                    />
+                    <Input
+                      placeholder={t('customers.contactPersonPlaceholder')}
+                      value={newCustomer.contactPerson}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, contactPerson: e.target.value })}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder={t('customers.emailPlaceholder')}
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  className="h-8 text-xs"
+                  type="email"
+                />
+                <Input
+                  placeholder={t('customers.phonePlaceholder')}
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <Button
+                size="sm"
+                className="w-full h-8 text-xs"
+                onClick={handleCreateCustomer}
+                disabled={!isNewCustomerValid() || isCreatingCustomer}
+              >
+                {isCreatingCustomer ? t('common.saving') : t('pos.createAndSelect')}
+              </Button>
+            </div>
+          ) : (
+            /* Customer Search + New Button */
+            <div className="flex gap-1.5">
+              <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 justify-start text-left font-normal h-9"
+                  >
+                    <Search className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                    {selectedCustomer ? selectedCustomer.name : t('sales.selectCustomer')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]" align="start">
+                  <Command>
+                    <CommandInput placeholder={t('sales.searchCustomers')} />
+                    <CommandList>
+                      <CommandEmpty>{t('sales.noCustomersFound')}</CommandEmpty>
+                      <CommandGroup>
+                        {customers.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.name}
+                            onSelect={() => {
+                              setSelectedCustomerId(c.id);
+                              setCustomerOpen(false);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              {c.customer_type === 'company' ? (
+                                <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              ) : (
+                                <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              )}
+                              <span>{c.name}</span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <Button
                 variant="outline"
-                size="sm"
-                className="w-full justify-start text-left font-normal h-9"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={() => setShowNewCustomer(true)}
+                title={t('pos.newCustomer')}
               >
-                <Search className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                {selectedCustomer ? selectedCustomer.name : t('sales.selectCustomer')}
+                <UserPlus className="h-4 w-4" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0 w-[280px]" align="start">
-              <Command>
-                <CommandInput placeholder={t('sales.searchCustomers')} />
-                <CommandList>
-                  <CommandEmpty>{t('sales.noCustomersFound')}</CommandEmpty>
-                  <CommandGroup>
-                    {customers.map((c) => (
-                      <CommandItem
-                        key={c.id}
-                        value={c.name}
-                        onSelect={() => {
-                          setSelectedCustomerId(c.id);
-                          setCustomerOpen(false);
-                        }}
-                      >
-                        {c.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
         </div>
 
         {/* Totals */}

@@ -541,7 +541,9 @@
     "openPOS": "Open POS",
     "outOfStock": "Out of stock",
     "inStock": "in stock",
-    "maxStock": "Maximum stock reached"
+    "maxStock": "Maximum stock reached",
+    "newCustomer": "New Customer",
+    "createAndSelect": "Create & Select"
   },
   "reports": {
     "title": "Reports",

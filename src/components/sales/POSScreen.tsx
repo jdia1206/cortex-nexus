@@ -24,7 +24,7 @@ export default function POSScreen({ onSwitchToAdmin }: POSScreenProps) {
   const { profile, signOut, userRole } = useAuth();
   const { create, isCreating, sales } = useSales();
   const { products } = useProducts();
-  const { customers } = useCustomers();
+  const { customers, create: createCustomer } = useCustomers();
   const { categories } = useProductCategories();
   const { formatCurrency } = useCurrency();
 
@@ -183,6 +183,7 @@ export default function POSScreen({ onSwitchToAdmin }: POSScreenProps) {
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
             onCompleteSale={handleCompleteSale}
+            onCreateCustomer={createCustomer}
             isSubmitting={isCreating}
           />
         </div>
