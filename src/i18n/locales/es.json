@@ -452,7 +452,7 @@
     "completeSale": "Completar Venta",
     "saleComplete": "¡Venta Completada!",
     "newSale": "Nueva Venta",
-    "quickCustomer": "Cliente (opcional)",
+    "quickCustomer": "Cliente",
     "noCustomer": "Sin cliente",
     "noProductsInCategory": "No se encontraron productos",
     "itemAdded": "Agregado al carrito",
