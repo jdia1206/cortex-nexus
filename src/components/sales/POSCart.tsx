@@ -84,7 +84,7 @@ export default function POSCart({
   const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
 
   const handleComplete = () => {
-    if (!paymentMethod || items.length === 0) return;
+    if (!paymentMethod || items.length === 0 || !selectedCustomerId) return;
     onCompleteSale(paymentMethod, selectedCustomerId, discount);
     setPaymentMethod(null);
     setSelectedCustomerId(null);
@@ -179,7 +179,9 @@ export default function POSCart({
       <div className="border-t p-4 space-y-4">
         {/* Customer Selector */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-muted-foreground">{t('pos.quickCustomer')}</Label>
+          <Label className="text-xs font-medium text-muted-foreground">
+            {t('pos.quickCustomer')} <span className="text-destructive">*</span>
+          </Label>
           <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -197,15 +199,6 @@ export default function POSCart({
                 <CommandList>
                   <CommandEmpty>{t('sales.noCustomersFound')}</CommandEmpty>
                   <CommandGroup>
-                    <CommandItem
-                      value="__none__"
-                      onSelect={() => {
-                        setSelectedCustomerId(null);
-                        setCustomerOpen(false);
-                      }}
-                    >
-                      — {t('pos.noCustomer')}
-                    </CommandItem>
                     {customers.map((c) => (
                       <CommandItem
                         key={c.id}
@@ -280,7 +273,7 @@ export default function POSCart({
           className="w-full h-14 text-lg font-bold"
           size="lg"
           onClick={handleComplete}
-          disabled={items.length === 0 || !paymentMethod || isSubmitting}
+          disabled={items.length === 0 || !paymentMethod || !selectedCustomerId || isSubmitting}
         >
           {isSubmitting ? t('common.saving') : t('pos.completeSale')}
         </Button>
