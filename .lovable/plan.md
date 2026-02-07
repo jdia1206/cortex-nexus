@@ -1,81 +1,102 @@
 
-# Activity Log Page for Admins
+
+# POS Screen for Employees + Admin Sales Dashboard
 
 ## Overview
-Create a dedicated Activity Log page where admin users can view all transaction logs across the organization. The logs are already being stored in the `tenant_audit_log` table and the `useAuditLog` hook already fetches them - we just need to build the UI to display them.
 
-## What Will Be Built
+The `/sales` route will show a different experience based on the user's role:
+- **Admin** sees the current full sales management view (table of all invoices, status management, PDF downloads, etc.)
+- **User (employee)** sees a touch-friendly POS (Point of Sale) interface with large product buttons, a cart sidebar, and quick checkout
 
-### 1. Activity Log Page
-A new settings page at `/settings/activity` that displays all audit logs in a searchable, filterable table format:
-- **User column**: Shows who performed the action
-- **Action column**: What they did (create, update, delete, mark_paid, etc.)
-- **Entity column**: What type of item was affected (sale, purchase, product, etc.)
-- **Details column**: Additional context about the action
-- **Date column**: When the action occurred
+## How It Works
 
-### 2. Filtering Capabilities
-- **Search**: Filter by user name
-- **Action filter**: Dropdown to filter by action type (all, create, update, delete, etc.)
-- **Entity filter**: Dropdown to filter by entity type (all, sale, purchase, product, etc.)
-- **Date range**: Optional date filtering
+The existing `Sales.tsx` page will check `userRole` from `AuthContext` and render one of two components:
+- `AdminSalesView` -- the current sales page (moved into its own component)
+- `POSScreen` -- a new, full-screen POS interface designed for speed and simplicity
 
-### 3. Navigation Update
-Add "Activity Log" to the Settings menu in the sidebar (only visible to admin users)
+No database changes are needed. The POS uses the same `useSales`, `useProducts`, `useCustomers`, and `useProductCategories` hooks.
 
-### 4. Admin-Only Access
-The page will check the user's role and only allow admins to view the activity logs.
+## POS Screen Design
 
----
+The POS screen will have a clean, touch-optimized layout:
+
+**Left side (~65% width):** Product grid
+- Category filter tabs at the top (using product categories + "All" tab)
+- Search bar for quick product lookup
+- Large product cards in a responsive grid (3-4 columns)
+- Each card shows: product image/icon, name, price, and stock
+- Tapping a card adds 1 unit to the cart (with visual feedback)
+
+**Right side (~35% width):** Cart and checkout
+- List of selected items with quantity controls (+/- buttons, editable qty)
+- Running subtotal, tax, discount, and total
+- Quick customer selector (optional, searchable dropdown)
+- Payment method selector (Cash, Card, Crypto) with large icon buttons
+- "Complete Sale" button (large, prominent)
+- "Clear Cart" button
+
+**Header:** Simplified header with receipt number, employee name, and a link/button to switch back to the full sales view (for admins who may want to toggle)
+
+## File Structure
+
+New files to create:
+- `src/components/sales/POSScreen.tsx` -- Main POS layout component
+- `src/components/sales/POSProductGrid.tsx` -- Product grid with category tabs and search
+- `src/components/sales/POSCart.tsx` -- Cart sidebar with checkout controls
+- `src/components/sales/AdminSalesView.tsx` -- Extracted current admin sales view
+
+Modified files:
+- `src/pages/Sales.tsx` -- Role-based routing between POS and admin view
+- `src/i18n/locales/en.json` -- New POS translation keys
+- `src/i18n/locales/es.json` -- Spanish POS translations
 
 ## Technical Details
 
-### Files to Create
-1. **`src/pages/settings/ActivityLog.tsx`** - New page component with:
-   - Uses existing `useAuditLog` hook to fetch logs
-   - DataTable component for display
-   - Filter dropdowns for action and entity type
-   - Badge styling for different action types
-   - Date formatting with `date-fns`
-   - Admin-only check using `userRole` from AuthContext
-
-### Files to Modify
-1. **`src/App.tsx`** - Add route for `/settings/activity`
-2. **`src/components/layout/AppSidebar.tsx`** - Add Activity Log to settings nav items
-3. **`src/i18n/locales/en.json`** - Add translation strings for the activity log page
-
-### Component Structure
+### Sales.tsx (modified)
 ```text
-ActivityLog.tsx
-+------------------------------------------+
-|  Activity Log                            |
-|  View all user actions and transactions  |
-+------------------------------------------+
-| [Search by user...] [Action v] [Entity v]|
-+------------------------------------------+
-| User    | Action  | Entity | Date       |
-|---------|---------|--------|------------|
-| John    | create  | sale   | 2 mins ago |
-| Sarah   | update  | product| 1 hour ago |
-| ...     | ...     | ...    | ...        |
-+------------------------------------------+
-| Showing 1-10 of 50        [<] 1/5 [>]   |
-+------------------------------------------+
+- Import useAuth to get userRole
+- If userRole === 'admin': render <AdminSalesView />
+- If userRole === 'user': render <POSScreen />
+- Both views share the same data hooks (useSales, useProducts, etc.)
 ```
 
-### Translation Keys to Add
-- `nav.activityLog` - "Activity Log"
-- `activityLog.title` - "Activity Log"
-- `activityLog.description` - "View all user actions and transactions"
-- `activityLog.user` - "User"
-- `activityLog.action` - "Action"
-- `activityLog.entity` - "Entity"
-- `activityLog.date` - "Date"
-- `activityLog.details` - "Details"
-- `activityLog.filterByAction` - "Filter by action"
-- `activityLog.filterByEntity` - "Filter by entity"
-- `activityLog.allActions` - "All actions"
-- `activityLog.allEntities` - "All entities"
-- `activityLog.empty` - "No activity logs yet"
-- `activityLog.emptyDescription` - "User actions will appear here"
-- `activityLog.searchPlaceholder` - "Search by user name..."
+### AdminSalesView.tsx (new)
+- Extract the entire current content of Sales.tsx into this component
+- No logic changes, just a refactor into its own file
+
+### POSScreen.tsx (new)
+- Full-screen layout (no AppLayout sidebar -- uses a minimal header instead)
+- Uses `useProducts`, `useCustomers`, `useSales`, `useProductCategories`
+- Manages cart state (selected products, quantities)
+- Handles sale submission via `useSales.create`
+- Shows success feedback with receipt number after checkout
+- Responsive: stacks vertically on mobile (products on top, cart below)
+
+### POSProductGrid.tsx (new)
+- Fetches categories from `useProductCategories`
+- Renders horizontal category filter tabs
+- Search input for product name/SKU filtering
+- Large, touch-friendly product cards (min ~120px x 120px)
+- Shows product image (or placeholder icon), name, price
+- Tap to add to cart with brief animation/highlight
+- Grayed out products with 0 stock
+
+### POSCart.tsx (new)
+- Scrollable list of cart items
+- Each item: name, unit price, quantity controls (-, qty input, +), line total, remove button
+- Summary section: subtotal, tax, discount input, total
+- Optional customer search dropdown (simplified)
+- Payment method: 3 large buttons (Cash, Card, Crypto) side by side
+- "Complete Sale" button -- full width, large, prominent color
+- "Clear Cart" button -- secondary/outline style
+
+### Translation Keys (new entries under "pos" namespace)
+- `pos.title`, `pos.searchProducts`, `pos.allCategories`, `pos.cart`, `pos.clearCart`, `pos.checkout`, `pos.completeSale`, `pos.saleComplete`, `pos.newSale`, `pos.quickCustomer`, `pos.noProductsInCategory`, `pos.itemAdded`, `pos.viewAllSales`
+
+### Role Check Logic
+The `userRole` is already available from `useAuth()` and is fetched from the `user_roles` table. No database changes needed:
+- `'admin'` role: full sales dashboard
+- `'user'` role: POS screen
+
+Admins will also have a toggle button to switch to POS view if they want to use it.
+
