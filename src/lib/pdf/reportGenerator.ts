@@ -1,5 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { PDF_COLORS, PDF_FONTS, ACCENT_BAR_HEIGHT } from './pdfStyles';
+
+// Re-export for backward compatibility
+export { generateInvoicePDF } from './invoiceGenerator';
 
 interface CompanyInfo {
   name: string;
@@ -32,269 +36,173 @@ interface TableData {
 export function generateReport(options: ReportOptions, tableData: TableData): jsPDF {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  
-  // Header
-  doc.setFontSize(20);
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginLeft = 20;
+  const marginRight = 20;
+
+  // === TOP ACCENT BAR ===
+  doc.setFillColor(...PDF_COLORS.accentBlue);
+  doc.rect(0, 0, pageWidth, ACCENT_BAR_HEIGHT, 'F');
+
+  // === COMPANY INFO (top-left) ===
+  let yPos = ACCENT_BAR_HEIGHT + 14;
+  doc.setFontSize(PDF_FONTS.titleSize);
   doc.setFont('helvetica', 'bold');
-  doc.text(options.company.name, pageWidth / 2, 20, { align: 'center' });
-  
-  // Company info
-  doc.setFontSize(10);
+  doc.setTextColor(...PDF_COLORS.black);
+  doc.text(options.company.name, marginLeft, yPos);
+
+  doc.setFontSize(PDF_FONTS.normalSize);
   doc.setFont('helvetica', 'normal');
-  let yPos = 28;
+  doc.setTextColor(...PDF_COLORS.darkGray);
   if (options.company.address) {
-    doc.text(options.company.address, pageWidth / 2, yPos, { align: 'center' });
     yPos += 5;
+    doc.text(options.company.address, marginLeft, yPos);
   }
   if (options.company.phone || options.company.email) {
+    yPos += 4;
     const contactInfo = [options.company.phone, options.company.email].filter(Boolean).join(' | ');
-    doc.text(contactInfo, pageWidth / 2, yPos, { align: 'center' });
-    yPos += 5;
+    doc.text(contactInfo, marginLeft, yPos);
   }
   if (options.company.taxId) {
-    doc.text(`Tax ID: ${options.company.taxId}`, pageWidth / 2, yPos, { align: 'center' });
-    yPos += 5;
+    yPos += 4;
+    doc.text(`Tax ID: ${options.company.taxId}`, marginLeft, yPos);
   }
-  
-  // Title
-  yPos += 10;
-  doc.setFontSize(16);
+
+  // === REPORT INFO (top-right) ===
+  const infoX = pageWidth / 2 + 10;
+  const valueX = pageWidth - marginRight;
+  let infoY = ACCENT_BAR_HEIGHT + 14;
+
+  doc.setFontSize(PDF_FONTS.smallSize);
   doc.setFont('helvetica', 'bold');
-  doc.text(options.title, pageWidth / 2, yPos, { align: 'center' });
-  
-  if (options.subtitle) {
-    yPos += 7;
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(options.subtitle, pageWidth / 2, yPos, { align: 'center' });
-  }
-  
+  doc.setTextColor(...PDF_COLORS.mediumGray);
+  doc.text('REPORT', infoX, infoY);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_COLORS.darkGray);
+  doc.text(options.title, valueX, infoY, { align: 'right' });
+
   if (options.dateRange) {
-    yPos += 7;
-    doc.setFontSize(10);
-    doc.text(`Period: ${options.dateRange.from} to ${options.dateRange.to}`, pageWidth / 2, yPos, { align: 'center' });
+    infoY += 5;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...PDF_COLORS.mediumGray);
+    doc.text('PERIOD', infoX, infoY);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...PDF_COLORS.darkGray);
+    doc.text(`${options.dateRange.from} — ${options.dateRange.to}`, valueX, infoY, { align: 'right' });
   }
-  
-  // Generated date
-  yPos += 7;
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos, { align: 'center' });
-  doc.setTextColor(0);
-  
-  // Table
-  yPos += 10;
-  
+
+  infoY += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...PDF_COLORS.mediumGray);
+  doc.text('GENERATED', infoX, infoY);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_COLORS.darkGray);
+  doc.text(new Date().toLocaleDateString(), valueX, infoY, { align: 'right' });
+
+  // === DIVIDER ===
+  yPos = Math.max(yPos + 10, infoY + 10);
+  doc.setDrawColor(...PDF_COLORS.lightGray);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+  yPos += 8;
+
+  // === REPORT TITLE (prominent) ===
+  doc.setFontSize(PDF_FONTS.headingSize);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_COLORS.darkGray);
+  doc.text(options.title, marginLeft, yPos + 6);
+
+  if (options.subtitle) {
+    doc.setFontSize(10);
+    doc.setTextColor(...PDF_COLORS.mediumGray);
+    doc.text(options.subtitle, marginLeft, yPos + 14);
+    yPos += 8;
+  }
+
+  yPos += 16;
+  doc.setDrawColor(...PDF_COLORS.lightGray);
+  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+  yPos += 8;
+
+  // === DATA TABLE ===
   const columns = tableData.columns.map(col => ({
-    header: col.header,
+    header: col.header.toUpperCase(),
     dataKey: col.dataKey,
   }));
-  
+
   autoTable(doc, {
     startY: yPos,
     head: [columns.map(c => c.header)],
     body: tableData.rows.map(row => columns.map(c => row[c.dataKey]?.toString() || '')),
-    theme: 'striped',
+    theme: 'plain',
     headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: 255,
+      fillColor: false as unknown as [number, number, number],
+      textColor: PDF_COLORS.mediumGray,
       fontStyle: 'bold',
+      fontSize: PDF_FONTS.smallSize,
+      cellPadding: { top: 4, bottom: 4, left: 2, right: 2 },
     },
-    alternateRowStyles: {
-      fillColor: [245, 245, 245],
+    bodyStyles: {
+      textColor: PDF_COLORS.darkGray,
+      fontSize: PDF_FONTS.normalSize,
+      cellPadding: { top: 5, bottom: 5, left: 2, right: 2 },
     },
-    styles: {
-      fontSize: 9,
-      cellPadding: 3,
+    margin: { left: marginLeft, right: marginRight },
+    didDrawPage: () => {
+      doc.setFillColor(...PDF_COLORS.accentBlue);
+      doc.rect(0, 0, pageWidth, ACCENT_BAR_HEIGHT, 'F');
     },
   });
-  
-  // Totals
+
+  // === TOTALS ===
   if (tableData.totals) {
-    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    
-    let totalsY = finalY;
-    Object.entries(tableData.totals).forEach(([label, value]) => {
-      doc.text(`${label}: ${options.currency}${value.toFixed(2)}`, pageWidth - 20, totalsY, { align: 'right' });
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+    let totalsY = finalY + 8;
+
+    doc.setDrawColor(...PDF_COLORS.lightGray);
+    doc.line(pageWidth / 2, totalsY, pageWidth - marginRight, totalsY);
+    totalsY += 8;
+
+    const totalsLabelX = pageWidth - marginRight - 45;
+    const totalsValueX = pageWidth - marginRight;
+
+    doc.setFontSize(PDF_FONTS.normalSize);
+    doc.setTextColor(...PDF_COLORS.darkGray);
+
+    Object.entries(tableData.totals).forEach(([label, value], index, arr) => {
+      const isLast = index === arr.length - 1;
+      if (isLast) {
+        doc.setDrawColor(...PDF_COLORS.lightGray);
+        doc.line(pageWidth / 2, totalsY - 2, pageWidth - marginRight, totalsY - 2);
+        totalsY += 4;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      doc.text(label, totalsLabelX, totalsY, { align: 'right' });
+      doc.text(`${options.currency}${value.toFixed(2)}`, totalsValueX, totalsY, { align: 'right' });
       totalsY += 6;
     });
   }
-  
-  // Footer
+
+  // === BOTTOM ACCENT BAR (every page) ===
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(128);
+    doc.setFillColor(...PDF_COLORS.accentBlue);
+    doc.rect(0, pageHeight - ACCENT_BAR_HEIGHT, pageWidth, ACCENT_BAR_HEIGHT, 'F');
+
+    // Page number
+    doc.setFontSize(7);
+    doc.setTextColor(...PDF_COLORS.mediumGray);
     doc.text(
       `Page ${i} of ${pageCount}`,
       pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
+      pageHeight - ACCENT_BAR_HEIGHT - 4,
       { align: 'center' }
     );
   }
-  
-  return doc;
-}
 
-export function generateInvoicePDF(
-  type: 'sale' | 'purchase' | 'return',
-  data: {
-    invoiceNumber: string;
-    date: string;
-    customer?: { name: string; email?: string; phone?: string; address?: string };
-    supplier?: { name: string; email?: string; phone?: string; address?: string };
-    items: Array<{
-      name: string;
-      quantity: number;
-      unitPrice: number;
-      taxRate: number;
-      subtotal: number;
-    }>;
-    subtotal: number;
-    taxAmount: number;
-    discount?: number;
-    total: number;
-    notes?: string;
-  },
-  company: CompanyInfo,
-  currency: string
-): jsPDF {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  
-  // Header
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text(company.name, 20, 20);
-  
-  // Company details
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  let yPos = 28;
-  if (company.address) {
-    doc.text(company.address, 20, yPos);
-    yPos += 4;
-  }
-  if (company.phone) {
-    doc.text(`Phone: ${company.phone}`, 20, yPos);
-    yPos += 4;
-  }
-  if (company.email) {
-    doc.text(`Email: ${company.email}`, 20, yPos);
-    yPos += 4;
-  }
-  if (company.taxId) {
-    doc.text(`Tax ID: ${company.taxId}`, 20, yPos);
-  }
-  
-  // Document type & number
-  const typeLabels = {
-    sale: 'SALES RECEIPT',
-    purchase: 'PURCHASE ORDER',
-    return: 'RETURN SLIP',
-  };
-  
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text(typeLabels[type], pageWidth - 20, 20, { align: 'right' });
-  
-  doc.setFontSize(11);
-  doc.text(`#${data.invoiceNumber}`, pageWidth - 20, 30, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Date: ${data.date}`, pageWidth - 20, 38, { align: 'right' });
-  
-  // Customer/Supplier info
-  yPos = 55;
-  const party = type === 'purchase' ? data.supplier : data.customer;
-  const partyLabel = type === 'purchase' ? 'Supplier' : (type === 'return' ? 'Customer' : 'Bill To');
-  
-  if (party) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text(partyLabel, 20, yPos);
-    doc.setFont('helvetica', 'normal');
-    yPos += 6;
-    doc.text(party.name, 20, yPos);
-    if (party.address) {
-      yPos += 4;
-      doc.text(party.address, 20, yPos);
-    }
-    if (party.email) {
-      yPos += 4;
-      doc.text(party.email, 20, yPos);
-    }
-    if (party.phone) {
-      yPos += 4;
-      doc.text(party.phone, 20, yPos);
-    }
-  }
-  
-  // Items table
-  yPos = Math.max(yPos + 15, 80);
-  
-  autoTable(doc, {
-    startY: yPos,
-    head: [['Item', 'Qty', 'Unit Price', 'Tax %', 'Subtotal']],
-    body: data.items.map(item => [
-      item.name,
-      item.quantity.toString(),
-      `${currency}${item.unitPrice.toFixed(2)}`,
-      `${item.taxRate}%`,
-      `${currency}${item.subtotal.toFixed(2)}`,
-    ]),
-    theme: 'striped',
-    headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: 255,
-      fontStyle: 'bold',
-    },
-    columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { halign: 'center', cellWidth: 20 },
-      2: { halign: 'right', cellWidth: 30 },
-      3: { halign: 'center', cellWidth: 20 },
-      4: { halign: 'right', cellWidth: 30 },
-    },
-  });
-  
-  // Totals
-  const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-  
-  doc.setFontSize(10);
-  const totalsX = pageWidth - 20;
-  let totalsY = finalY;
-  
-  doc.text(`Subtotal:`, totalsX - 40, totalsY);
-  doc.text(`${currency}${data.subtotal.toFixed(2)}`, totalsX, totalsY, { align: 'right' });
-  
-  totalsY += 6;
-  doc.text(`Tax:`, totalsX - 40, totalsY);
-  doc.text(`${currency}${data.taxAmount.toFixed(2)}`, totalsX, totalsY, { align: 'right' });
-  
-  if (data.discount && data.discount > 0) {
-    totalsY += 6;
-    doc.text(`Discount:`, totalsX - 40, totalsY);
-    doc.text(`-${currency}${data.discount.toFixed(2)}`, totalsX, totalsY, { align: 'right' });
-  }
-  
-  totalsY += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text(`Total:`, totalsX - 40, totalsY);
-  doc.text(`${currency}${data.total.toFixed(2)}`, totalsX, totalsY, { align: 'right' });
-  
-  // Notes
-  if (data.notes) {
-    totalsY += 15;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Notes:', 20, totalsY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(data.notes, 20, totalsY + 5);
-  }
-  
   return doc;
 }
