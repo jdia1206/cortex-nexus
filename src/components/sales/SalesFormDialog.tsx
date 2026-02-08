@@ -194,6 +194,7 @@ export function SalesFormDialog({
           company_email: tenant?.email,
           company_phone: tenant?.phone,
           company_address: tenant?.address,
+          company_logo_url: tenant?.logo_url || undefined,
           items: selectedProducts.map(item => ({
             name: item.name,
             quantity: item.quantity,

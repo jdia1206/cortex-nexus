@@ -22,6 +22,7 @@
     "next": "Next",
     "submit": "Submit",
     "close": "Close",
+    "uploading": "Uploading...",
     "required": "Required",
     "optional": "Optional",
     "noData": "No data available",
@@ -358,6 +359,20 @@
     "website": "Website",
     "logo": "Logo",
     "updated": "Company profile updated successfully"
+  },
+  "logoUpload": {
+    "title": "Company Logo",
+    "description": "Your logo will appear on receipts, invoices, and reports",
+    "premiumDescription": "Upgrade to Pro to add your company logo to receipts and invoices",
+    "upload": "Upload Logo",
+    "change": "Change Logo",
+    "hint": "PNG, JPG, SVG or WebP. Max 2MB.",
+    "uploaded": "Logo uploaded successfully",
+    "removed": "Logo removed",
+    "uploadError": "Failed to upload logo",
+    "removeError": "Failed to remove logo",
+    "invalidType": "Please select an image file",
+    "tooLarge": "File must be smaller than 2MB"
   },
   "users": {
     "title": "Team Members",

@@ -12,6 +12,7 @@ import { SalesFormDialog } from '@/components/sales/SalesFormDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Download, CreditCard, Banknote, Bitcoin, CheckCircle2 } from 'lucide-react';
 import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
+import { useLogoDataUrl } from '@/hooks/useLogoDataUrl';
 import {
   Dialog,
   DialogContent,
@@ -54,7 +55,7 @@ export default function AdminSalesView({ onSwitchToPOS }: AdminSalesViewProps) {
   const { products } = useProducts();
   const { customers, create: createCustomer } = useCustomers();
   const { formatCurrency, currency } = useCurrency();
-
+  const logoDataUrl = useLogoDataUrl();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
@@ -81,7 +82,8 @@ export default function AdminSalesView({ onSwitchToPOS }: AdminSalesViewProps) {
         email: tenant?.email || undefined,
         taxId: tenant?.tax_id || undefined,
       },
-      currency.symbol
+      currency.symbol,
+      logoDataUrl || undefined
     );
     doc.save(`${sale.invoice_number}.pdf`);
   };

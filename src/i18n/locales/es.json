@@ -22,6 +22,7 @@
     "next": "Siguiente",
     "submit": "Enviar",
     "close": "Cerrar",
+    "uploading": "Subiendo...",
     "required": "Requerido",
     "optional": "Opcional",
     "noData": "No hay datos disponibles",
@@ -333,6 +334,20 @@
     "website": "Sitio Web",
     "logo": "Logo",
     "updated": "Perfil de empresa actualizado exitosamente"
+  },
+  "logoUpload": {
+    "title": "Logo de Empresa",
+    "description": "Tu logo aparecerá en recibos, facturas y reportes",
+    "premiumDescription": "Actualiza a Pro para agregar tu logo a recibos y facturas",
+    "upload": "Subir Logo",
+    "change": "Cambiar Logo",
+    "hint": "PNG, JPG, SVG o WebP. Máx 2MB.",
+    "uploaded": "Logo subido exitosamente",
+    "removed": "Logo eliminado",
+    "uploadError": "Error al subir el logo",
+    "removeError": "Error al eliminar el logo",
+    "invalidType": "Por favor selecciona un archivo de imagen",
+    "tooLarge": "El archivo debe ser menor a 2MB"
   },
   "users": {
     "title": "Miembros del Equipo",

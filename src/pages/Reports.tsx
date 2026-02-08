@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Download, ShoppingCart, ShoppingBag, RotateCcw, ArrowRightLeft } from 'lucide-react';
 import { generateReport } from '@/lib/pdf/reportGenerator';
+import { useLogoDataUrl } from '@/hooks/useLogoDataUrl';
 import { format, parseISO } from 'date-fns';
 
 export default function Reports() {
@@ -24,7 +25,7 @@ export default function Reports() {
   const { returns } = useReturns();
   const { transfers } = useTransfers();
   const { formatCurrency, currency } = useCurrency();
-
+  const logoDataUrl = useLogoDataUrl();
   const today = new Date().toISOString().split('T')[0];
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
@@ -82,7 +83,8 @@ export default function Reports() {
           [t('reports.totalSales')]: totalAmount,
           [t('reports.paidAmount')]: paidTotal,
         },
-      }
+      },
+      logoDataUrl || undefined
     );
     doc.save(`sales-report-${dateFrom}-to-${dateTo}.pdf`);
   };
@@ -117,7 +119,8 @@ export default function Reports() {
         totals: {
           [t('reports.totalPurchases')]: totalAmount,
         },
-      }
+      },
+      logoDataUrl || undefined
     );
     doc.save(`purchases-report-${dateFrom}-to-${dateTo}.pdf`);
   };
@@ -154,7 +157,8 @@ export default function Reports() {
           [t('reports.totalReturns')]: totalAmount,
           [t('reports.refundedAmount')]: refundedAmount,
         },
-      }
+      },
+      logoDataUrl || undefined
     );
     doc.save(`returns-report-${dateFrom}-to-${dateTo}.pdf`);
   };
@@ -185,7 +189,8 @@ export default function Reports() {
           date: tr.transfer_date,
           status: t(`transfers.${tr.status}`),
         })),
-      }
+      },
+      logoDataUrl || undefined
     );
     doc.save(`transfers-report-${dateFrom}-to-${dateTo}.pdf`);
   };

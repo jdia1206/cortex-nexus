@@ -13,6 +13,7 @@ import { ReturnFormDialog } from '@/components/returns/ReturnFormDialog';
 import { ReturnStatusDialog } from '@/components/returns/ReturnStatusDialog';
 import { Download, RefreshCw } from 'lucide-react';
 import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
+import { useLogoDataUrl } from '@/hooks/useLogoDataUrl';
 
 type Return = {
   id: string;
@@ -35,6 +36,7 @@ export default function Returns() {
   const { sales } = useSales();
   const { products } = useProducts();
   const { formatCurrency, currency } = useCurrency();
+  const logoDataUrl = useLogoDataUrl();
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -82,7 +84,8 @@ export default function Returns() {
         email: tenant?.email || undefined,
         taxId: tenant?.tax_id || undefined,
       },
-      currency.symbol
+      currency.symbol,
+      logoDataUrl || undefined
     );
     doc.save(`${ret.return_number}.pdf`);
   };
