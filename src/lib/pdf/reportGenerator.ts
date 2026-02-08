@@ -11,6 +11,7 @@ interface CompanyInfo {
   phone?: string;
   email?: string;
   taxId?: string;
+  logoUrl?: string;
 }
 
 interface ReportOptions {
@@ -19,6 +20,7 @@ interface ReportOptions {
   company: CompanyInfo;
   dateRange?: { from: string; to: string };
   currency: string;
+  logoDataUrl?: string;
 }
 
 interface TableColumn {
@@ -33,7 +35,7 @@ interface TableData {
   totals?: Record<string, number>;
 }
 
-export function generateReport(options: ReportOptions, tableData: TableData): jsPDF {
+export function generateReport(options: ReportOptions, tableData: TableData, logoDataUrl?: string): jsPDF {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -46,10 +48,28 @@ export function generateReport(options: ReportOptions, tableData: TableData): js
 
   // === COMPANY INFO (top-left) ===
   let yPos = ACCENT_BAR_HEIGHT + 14;
-  doc.setFontSize(PDF_FONTS.titleSize);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...PDF_COLORS.black);
-  doc.text(options.company.name, marginLeft, yPos);
+
+  // Add logo if available
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', marginLeft, yPos - 4, 24, 24);
+      doc.setFontSize(PDF_FONTS.titleSize);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...PDF_COLORS.black);
+      doc.text(options.company.name, marginLeft + 28, yPos + 4);
+      yPos += 10;
+    } catch {
+      doc.setFontSize(PDF_FONTS.titleSize);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...PDF_COLORS.black);
+      doc.text(options.company.name, marginLeft, yPos);
+    }
+  } else {
+    doc.setFontSize(PDF_FONTS.titleSize);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...PDF_COLORS.black);
+    doc.text(options.company.name, marginLeft, yPos);
+  }
 
   doc.setFontSize(PDF_FONTS.normalSize);
   doc.setFont('helvetica', 'normal');

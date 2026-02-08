@@ -28,6 +28,7 @@ interface ReceiptData {
   company_email?: string;
   company_phone?: string;
   company_address?: string;
+  company_logo_url?: string;
   items: ReceiptItem[];
   subtotal: number;
   tax_amount: number;
@@ -69,7 +70,18 @@ function generateReceiptHTML(data: ReceiptData): string {
     <div style="padding: 30px 30px 0 30px;">
       <!-- Company info -->
       <div style="margin-bottom: 20px;">
-        <div style="font-size: 16px; font-weight: bold; color: #000; margin-bottom: 4px;">${data.company_name}</div>
+        ${data.company_logo_url ? `
+        <table cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+          <tr>
+            <td style="vertical-align: middle; padding-right: 12px;">
+              <img src="${data.company_logo_url}" alt="${data.company_name}" style="height: 40px; max-width: 120px; object-fit: contain;" />
+            </td>
+            <td style="vertical-align: middle;">
+              <div style="font-size: 16px; font-weight: bold; color: #000;">${data.company_name}</div>
+            </td>
+          </tr>
+        </table>
+        ` : `<div style="font-size: 16px; font-weight: bold; color: #000; margin-bottom: 4px;">${data.company_name}</div>`}
         ${data.company_address ? `<div style="font-size: 13px; color: #555;">${data.company_address}</div>` : ''}
         ${data.company_phone ? `<div style="font-size: 13px; color: #555;">${data.company_phone}</div>` : ''}
         ${data.company_email ? `<div style="font-size: 13px; color: #555;">${data.company_email}</div>` : ''}

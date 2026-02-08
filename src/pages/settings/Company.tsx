@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared';
 import { useTenant } from '@/hooks/useTenant';
+import { LogoUpload } from '@/components/settings/LogoUpload';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
@@ -61,6 +62,8 @@ export default function Company() {
           title={t('company.title')}
           description={t('company.description')}
         />
+
+        <LogoUpload />
 
         <Card>
           <CardContent className="pt-6">

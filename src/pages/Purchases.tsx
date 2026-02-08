@@ -19,6 +19,7 @@ import {
 import { PurchasesFormDialog } from '@/components/purchases/PurchasesFormDialog';
 import { CheckCircle, XCircle, MoreHorizontal, Download } from 'lucide-react';
 import { generateInvoicePDF } from '@/lib/pdf/reportGenerator';
+import { useLogoDataUrl } from '@/hooks/useLogoDataUrl';
 
 type PurchaseInvoice = {
   id: string;
@@ -40,7 +41,7 @@ export default function Purchases() {
   const { products, create: createProduct, isCreating: isCreatingProduct } = useProducts();
   const { warehouses } = useWarehouses();
   const { formatCurrency, currency } = useCurrency();
-
+  const logoDataUrl = useLogoDataUrl();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<PurchaseInvoice | null>(null);
@@ -68,7 +69,8 @@ export default function Purchases() {
         email: tenant?.email || undefined,
         taxId: tenant?.tax_id || undefined,
       },
-      currency.symbol
+      currency.symbol,
+      logoDataUrl || undefined
     );
     doc.save(`${purchase.invoice_number}.pdf`);
   };
