@@ -78,7 +78,7 @@ export function AppSidebar() {
             "font-bold text-sidebar-foreground transition-all",
             collapsed ? "text-lg" : "text-xl"
           )}>
-            {collapsed ? 'VS' : t('common.appName')}
+            {collapsed ? 'CA' : t('common.appName')}
           </span>
         </div>
 

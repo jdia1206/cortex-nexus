@@ -80,7 +80,7 @@ export default function Login() {
             <h1 className="text-3xl font-bold text-primary">{t('common.appName')}</h1>
           </div>
           <CardTitle className="text-2xl">{t('auth.loginTitle')}</CardTitle>
-          <CardDescription>{t('auth.loginSubtitle')}</CardDescription>
+          <CardDescription>{t('common.appDescription')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

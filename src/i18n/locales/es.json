@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Nexus",
+    "appName": "Cortex Axon",
+    "appDescription": "La plataforma integral de gestión empresarial. Optimiza tus ventas, compras, inventario y operaciones — todo desde un solo centro inteligente.",
     "loading": "Cargando...",
     "save": "Guardar",
     "saving": "Guardando...",

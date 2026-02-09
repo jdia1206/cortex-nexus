@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Nexus",
+    "appName": "Cortex Axon",
+    "appDescription": "The all-in-one business management platform. Streamline your sales, purchases, inventory, and operations — all from a single, intelligent hub.",
     "loading": "Loading...",
     "save": "Save",
     "saving": "Saving...",
