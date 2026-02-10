@@ -333,7 +333,8 @@
     "emptyDescription": "Agrega tu primer proveedor para comenzar",
     "created": "Proveedor creado exitosamente",
     "updated": "Proveedor actualizado exitosamente",
-    "deleted": "Proveedor eliminado exitosamente"
+    "deleted": "Proveedor eliminado exitosamente",
+    "namePlaceholder": "ej., Acme Corp"
   },
   "company": {
     "title": "Perfil de Empresa",
