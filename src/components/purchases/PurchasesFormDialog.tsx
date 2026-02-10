@@ -80,8 +80,10 @@ interface PurchasesFormDialogProps {
     }[];
   }) => Promise<void>;
   onCreateProduct?: (data: any) => Promise<void>;
+  onCreateSupplier?: (name: string) => Promise<any>;
   isSubmitting: boolean;
   isCreatingProduct?: boolean;
+  isCreatingSupplier?: boolean;
   purchasesCount: number;
 }
 
