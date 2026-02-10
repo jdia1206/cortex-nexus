@@ -104,8 +104,10 @@ export function PurchasesFormDialog({
   warehouses,
   onSubmit,
   onCreateProduct,
+  onCreateSupplier,
   isSubmitting,
   isCreatingProduct,
+  isCreatingSupplier,
   purchasesCount,
 }: PurchasesFormDialogProps) {
   const { t } = useTranslation();
