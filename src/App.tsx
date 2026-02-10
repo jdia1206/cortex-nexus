@@ -19,6 +19,7 @@ import Suppliers from "./pages/Suppliers";
 import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Purchases from "./pages/Purchases";
+import PendingPurchases from "./pages/PendingPurchases";
 import Returns from "./pages/Returns";
 import Transfers from "./pages/Transfers";
 import Reports from "./pages/Reports";
