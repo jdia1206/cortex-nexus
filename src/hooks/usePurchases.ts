@@ -85,6 +85,7 @@ export function usePurchases() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success(t('purchases.updated'));
     },
     onError: (error) => {
