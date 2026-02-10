@@ -229,7 +229,13 @@
     "existingCustomer": "Cliente Existente",
     "newCustomer": "Nuevo Cliente",
     "searchCustomers": "Buscar clientes por nombre, correo, teléfono...",
-    "noCustomersFound": "No se encontraron clientes"
+    "noCustomersFound": "No se encontraron clientes",
+    "markAsPaid": "Marcar como Pagado",
+    "paymentMethod": "Método de Pago",
+    "selectPaymentMethod": "Seleccionar método de pago",
+    "paymentCash": "Efectivo",
+    "paymentCard": "Tarjeta",
+    "paymentCrypto": "Cripto"
   },
   "purchases": {
     "title": "Compras",
