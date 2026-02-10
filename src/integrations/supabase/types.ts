@@ -1468,6 +1468,10 @@ export type Database = {
         Args: { p_full_name: string; p_tenant_name: string; p_user_id: string }
         Returns: string
       }
+      deduct_product_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
       get_user_tenant_id: { Args: never; Returns: string }
       has_role_in_tenant: {
         Args: {
