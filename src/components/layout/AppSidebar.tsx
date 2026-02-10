@@ -96,7 +96,90 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
+              {mainNavItems.slice(0, 4).map((item) => (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={collapsed ? t(`nav.${item.key}`) : undefined}
+                  >
+                    <NavLink
+                      to={item.url}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span>{t(`nav.${item.key}`)}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+
+              {/* Purchases with sub-items */}
+              <SidebarMenuItem>
+                <Collapsible open={purchasesOpen} onOpenChange={setPurchasesOpen}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      isActive={location.pathname.startsWith('/purchases')}
+                      tooltip={collapsed ? t('nav.purchases') : undefined}
+                      className="flex items-center justify-between px-4 py-2.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors cursor-pointer w-full"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ShoppingBag className="h-5 w-5 shrink-0" />
+                        {!collapsed && <span>{t('nav.purchases')}</span>}
+                      </div>
+                      {!collapsed && (
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform",
+                            purchasesOpen && "rotate-180"
+                          )}
+                        />
+                      )}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  {!collapsed && (
+                    <CollapsibleContent>
+                      <SidebarMenu className="pl-4">
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive('/purchases')}
+                          >
+                            <NavLink
+                              to="/purchases"
+                              className="flex items-center gap-3 px-4 py-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors text-sm"
+                              activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                            >
+                              <ShoppingBag className="h-4 w-4 shrink-0" />
+                              <span>{t('purchases.title')}</span>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        {purchasesSubItems.map((sub) => (
+                          <SidebarMenuItem key={sub.key}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive(sub.url)}
+                            >
+                              <NavLink
+                                to={sub.url}
+                                className="flex items-center gap-3 px-4 py-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors text-sm"
+                                activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                              >
+                                <sub.icon className="h-4 w-4 shrink-0" />
+                                <span>{t(sub.labelKey)}</span>
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </CollapsibleContent>
+                  )}
+                </Collapsible>
+              </SidebarMenuItem>
+
+              {mainNavItems.slice(4).map((item) => (
                 <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton
                     asChild
