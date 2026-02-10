@@ -84,6 +84,8 @@
     "inventory": "Inventario",
     "sales": "Ventas",
     "purchases": "Compras",
+    "returns": "Devoluciones",
+    "transfers": "Transferencias",
     "customers": "Clientes",
     "suppliers": "Proveedores",
     "settings": "Configuración",
@@ -92,7 +94,8 @@
     "branches": "Sucursales",
     "warehouses": "Almacenes",
     "company": "Empresa",
-    "reports": "Reportes"
+    "reports": "Reportes",
+    "activityLog": "Registro de Actividad"
   },
   "dashboard": {
     "title": "Panel de Control",
