@@ -126,6 +126,7 @@ export function useSales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success(t('sales.deleted'));
     },
     onError: (error) => {
