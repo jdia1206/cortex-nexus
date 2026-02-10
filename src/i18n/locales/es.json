@@ -368,7 +368,12 @@
     "user": "Usuario",
     "searchPlaceholder": "Buscar por nombre...",
     "empty": "No hay miembros del equipo",
-    "emptyDescription": "Invita miembros del equipo para colaborar"
+    "emptyDescription": "Invita miembros del equipo para colaborar",
+    "invite": "Agregar Empleado",
+    "inviteDescription": "Crea una nueva cuenta de usuario para tu miembro del equipo",
+    "selectRole": "Seleccionar rol",
+    "createUser": "Crear Usuario",
+    "created": "Usuario creado exitosamente"
   },
   "branches": {
     "title": "Sucursales",
