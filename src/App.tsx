@@ -93,6 +93,11 @@ const App = () => (
                   <Purchases />
                 </ProtectedRoute>
               } />
+              <Route path="/purchases/pending" element={
+                <ProtectedRoute>
+                  <PendingPurchases />
+                </ProtectedRoute>
+              } />
               <Route path="/returns" element={
                 <ProtectedRoute>
                   <Returns />

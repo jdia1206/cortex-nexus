@@ -16,6 +16,7 @@ import {
   RotateCcw,
   ArrowRightLeft,
   FileText,
+  Clock,
 } from 'lucide-react';
 import {
   Sidebar,

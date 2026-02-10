@@ -279,7 +279,12 @@
     "emptyDescription": "Crea tu primera compra para comenzar",
     "created": "Compra creada exitosamente",
     "updated": "Compra actualizada exitosamente",
-    "deleted": "Compra eliminada exitosamente"
+    "deleted": "Compra eliminada exitosamente",
+    "pendingTitle": "Compras Pendientes",
+    "pendingDescription": "Compras esperando ser marcadas como recibidas",
+    "noPending": "No hay compras pendientes",
+    "noPendingDescription": "Todas las compras han sido procesadas",
+    "pendingPurchases": "Recibos Pendientes"
   },
   "customers": {
     "title": "Clientes",
