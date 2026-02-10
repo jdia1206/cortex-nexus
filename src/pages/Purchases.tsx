@@ -218,8 +218,12 @@ export default function Purchases() {
           onCreateProduct={async (data) => {
             await createProduct(data);
           }}
+          onCreateSupplier={async (name) => {
+            return await createSupplier({ name });
+          }}
           isSubmitting={isCreating}
           isCreatingProduct={isCreatingProduct}
+          isCreatingSupplier={isCreatingSupplier}
           purchasesCount={purchases.length}
         />
 
