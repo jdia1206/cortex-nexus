@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SelectWithCreate } from '@/components/shared/SelectWithCreate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,8 +80,10 @@ interface PurchasesFormDialogProps {
     }[];
   }) => Promise<void>;
   onCreateProduct?: (data: any) => Promise<void>;
+  onCreateSupplier?: (name: string) => Promise<any>;
   isSubmitting: boolean;
   isCreatingProduct?: boolean;
+  isCreatingSupplier?: boolean;
   purchasesCount: number;
 }
 
@@ -101,8 +104,10 @@ export function PurchasesFormDialog({
   warehouses,
   onSubmit,
   onCreateProduct,
+  onCreateSupplier,
   isSubmitting,
   isCreatingProduct,
+  isCreatingSupplier,
   purchasesCount,
 }: PurchasesFormDialogProps) {
   const { t } = useTranslation();
@@ -195,18 +200,20 @@ export function PurchasesFormDialog({
                 <Truck className="h-4 w-4 text-muted-foreground" />
                 <Label className="text-base font-medium">{t('purchases.supplierInfo')}</Label>
               </div>
-              <Select value={supplierId} onValueChange={setSupplierId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('purchases.selectSupplier')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectWithCreate
+                value={supplierId}
+                onValueChange={setSupplierId}
+                placeholder={t('purchases.selectSupplier')}
+                items={suppliers.map(s => ({ id: s.id, name: s.name }))}
+                onCreateNew={async (name) => {
+                  if (onCreateSupplier) {
+                    return await onCreateSupplier(name);
+                  }
+                }}
+                isCreating={isCreatingSupplier}
+                createLabel={t('suppliers.add')}
+                createPlaceholder={t('suppliers.namePlaceholder')}
+              />
               
               {selectedSupplier && (
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">

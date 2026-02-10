@@ -17,14 +17,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { SelectWithCreate } from '@/components/shared/SelectWithCreate';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -74,7 +68,7 @@ export function ProductForm({
   isLoading,
 }: ProductFormProps) {
   const { t } = useTranslation();
-  const { categories } = useProductCategories();
+  const { categories, create: createCategory, isCreating: isCreatingCategory } = useProductCategories();
   const isEdit = !!product;
 
   const parseCustomFields = (fields: unknown): Array<{ name: string; value: string }> => {
@@ -182,23 +176,21 @@ export function ProductForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('products.category')}</FormLabel>
-                    <Select
-                      value={field.value || ''}
-                      onValueChange={(value) => field.onChange(value || null)}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('products.selectCategory')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SelectWithCreate
+                        value={field.value || ''}
+                        onValueChange={(value) => field.onChange(value || null)}
+                        placeholder={t('products.selectCategory')}
+                        items={categories.map(c => ({ id: c.id, name: c.name }))}
+                        onCreateNew={async (name) => {
+                          const result = await createCategory({ name });
+                          return result;
+                        }}
+                        isCreating={isCreatingCategory}
+                        createLabel={t('categories.add')}
+                        createPlaceholder={t('categories.namePlaceholder')}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

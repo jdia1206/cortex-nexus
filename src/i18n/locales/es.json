@@ -30,7 +30,9 @@
     "selectOption": "Selecciona una opción",
     "all": "Todos",
     "showing": "Mostrando",
-    "of": "de"
+    "of": "de",
+    "createNew": "Crear nuevo",
+    "name": "Nombre"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -331,7 +333,8 @@
     "emptyDescription": "Agrega tu primer proveedor para comenzar",
     "created": "Proveedor creado exitosamente",
     "updated": "Proveedor actualizado exitosamente",
-    "deleted": "Proveedor eliminado exitosamente"
+    "deleted": "Proveedor eliminado exitosamente",
+    "namePlaceholder": "ej., Acme Corp"
   },
   "company": {
     "title": "Perfil de Empresa",

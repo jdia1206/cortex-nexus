@@ -30,7 +30,9 @@
     "selectOption": "Select an option",
     "all": "All",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "createNew": "Create new",
+    "name": "Name"
   },
   "auth": {
     "login": "Log In",
@@ -347,7 +349,8 @@
     "emptyDescription": "Add your first supplier to get started",
     "created": "Supplier created successfully",
     "updated": "Supplier updated successfully",
-    "deleted": "Supplier deleted successfully"
+    "deleted": "Supplier deleted successfully",
+    "namePlaceholder": "e.g., Acme Corp"
   },
   "company": {
     "title": "Company Profile",

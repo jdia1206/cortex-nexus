@@ -37,7 +37,7 @@ export default function Purchases() {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
   const { purchases, isLoading, create, updateStatus, delete: deletePurchase, isCreating, isDeleting } = usePurchases();
-  const { suppliers } = useSuppliers();
+  const { suppliers, create: createSupplier, isCreating: isCreatingSupplier } = useSuppliers();
   const { products, create: createProduct, isCreating: isCreatingProduct } = useProducts();
   const { warehouses } = useWarehouses();
   const { formatCurrency, currency } = useCurrency();
@@ -218,8 +218,12 @@ export default function Purchases() {
           onCreateProduct={async (data) => {
             await createProduct(data);
           }}
+          onCreateSupplier={async (name) => {
+            return await createSupplier({ name });
+          }}
           isSubmitting={isCreating}
           isCreatingProduct={isCreatingProduct}
+          isCreatingSupplier={isCreatingSupplier}
           purchasesCount={purchases.length}
         />
 
