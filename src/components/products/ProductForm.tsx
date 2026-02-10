@@ -176,23 +176,21 @@ export function ProductForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('products.category')}</FormLabel>
-                    <Select
-                      value={field.value || ''}
-                      onValueChange={(value) => field.onChange(value || null)}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('products.selectCategory')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SelectWithCreate
+                        value={field.value || ''}
+                        onValueChange={(value) => field.onChange(value || null)}
+                        placeholder={t('products.selectCategory')}
+                        items={categories.map(c => ({ id: c.id, name: c.name }))}
+                        onCreateNew={async (name) => {
+                          const result = await createCategory({ name });
+                          return result;
+                        }}
+                        isCreating={isCreatingCategory}
+                        createLabel={t('categories.add')}
+                        createPlaceholder={t('categories.namePlaceholder')}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

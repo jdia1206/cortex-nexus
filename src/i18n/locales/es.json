@@ -30,7 +30,9 @@
     "selectOption": "Selecciona una opción",
     "all": "Todos",
     "showing": "Mostrando",
-    "of": "de"
+    "of": "de",
+    "createNew": "Crear nuevo",
+    "name": "Nombre"
   },
   "auth": {
     "login": "Iniciar Sesión",

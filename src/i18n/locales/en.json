@@ -30,7 +30,9 @@
     "selectOption": "Select an option",
     "all": "All",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "createNew": "Create new",
+    "name": "Name"
   },
   "auth": {
     "login": "Log In",
