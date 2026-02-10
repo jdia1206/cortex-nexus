@@ -42,12 +42,15 @@ const mainNavItems = [
   { key: 'products', icon: Package, url: '/products' },
   { key: 'inventory', icon: Warehouse, url: '/inventory' },
   { key: 'sales', icon: ShoppingCart, url: '/sales' },
-  { key: 'purchases', icon: ShoppingBag, url: '/purchases' },
   { key: 'returns', icon: RotateCcw, url: '/returns' },
   { key: 'transfers', icon: ArrowRightLeft, url: '/transfers' },
   { key: 'customers', icon: Users, url: '/customers' },
   { key: 'suppliers', icon: Truck, url: '/suppliers' },
   { key: 'reports', icon: FileText, url: '/reports' },
+];
+
+const purchasesSubItems = [
+  { key: 'pendingPurchases', labelKey: 'purchases.pendingPurchases', icon: Clock, url: '/purchases/pending' },
 ];
 
 const settingsNavItems = [
