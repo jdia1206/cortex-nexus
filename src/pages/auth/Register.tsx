@@ -99,7 +99,7 @@ export default function Register() {
             <h1 className="text-3xl font-bold text-primary">{t('common.appName')}</h1>
           </div>
           <CardTitle className="text-2xl">{t('auth.signUpTitle')}</CardTitle>
-          <CardDescription>{t('common.appDescription')}</CardDescription>
+          <CardDescription>{t('auth.signUpSubtitle')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
