@@ -68,7 +68,7 @@ export function ProductForm({
   isLoading,
 }: ProductFormProps) {
   const { t } = useTranslation();
-  const { categories } = useProductCategories();
+  const { categories, create: createCategory, isCreating: isCreatingCategory } = useProductCategories();
   const isEdit = !!product;
 
   const parseCustomFields = (fields: unknown): Array<{ name: string; value: string }> => {
