@@ -295,7 +295,12 @@
     "emptyDescription": "Create your first purchase to get started",
     "created": "Purchase created successfully",
     "updated": "Purchase updated successfully",
-    "deleted": "Purchase deleted successfully"
+    "deleted": "Purchase deleted successfully",
+    "pendingTitle": "Pending Purchases",
+    "pendingDescription": "Purchases waiting to be marked as received",
+    "noPending": "No pending purchases",
+    "noPendingDescription": "All purchases have been processed",
+    "pendingPurchases": "Pending Receipts"
   },
   "customers": {
     "title": "Customers",
