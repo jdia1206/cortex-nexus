@@ -118,16 +118,21 @@ export function AppSidebar() {
               {/* Purchases with sub-items */}
               <SidebarMenuItem>
                 <Collapsible open={purchasesOpen} onOpenChange={setPurchasesOpen}>
-                  <CollapsibleTrigger asChild>
+              <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       isActive={location.pathname.startsWith('/purchases')}
                       tooltip={collapsed ? t('nav.purchases') : undefined}
                       className="flex items-center justify-between px-4 py-2.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors cursor-pointer w-full"
                     >
-                      <div className="flex items-center gap-3">
+                      <NavLink
+                        to="/purchases"
+                        className="flex items-center gap-3 flex-1"
+                        activeClassName=""
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <ShoppingBag className="h-5 w-5 shrink-0" />
                         {!collapsed && <span>{t('nav.purchases')}</span>}
-                      </div>
+                      </NavLink>
                       {!collapsed && (
                         <ChevronDown
                           className={cn(
@@ -141,21 +146,6 @@ export function AppSidebar() {
                   {!collapsed && (
                     <CollapsibleContent>
                       <SidebarMenu className="pl-4">
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive('/purchases')}
-                          >
-                            <NavLink
-                              to="/purchases"
-                              className="flex items-center gap-3 px-4 py-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors text-sm"
-                              activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                            >
-                              <ShoppingBag className="h-4 w-4 shrink-0" />
-                              <span>{t('purchases.title')}</span>
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
                         {purchasesSubItems.map((sub) => (
                           <SidebarMenuItem key={sub.key}>
                             <SidebarMenuButton
