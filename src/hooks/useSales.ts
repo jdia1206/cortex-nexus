@@ -81,6 +81,8 @@ export function useSales() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success(t('sales.created'));
     },
     onError: (error) => {
