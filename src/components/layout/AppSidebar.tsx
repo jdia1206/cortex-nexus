@@ -70,6 +70,9 @@ export function AppSidebar() {
   const [settingsOpen, setSettingsOpen] = useState(
     location.pathname.startsWith('/settings')
   );
+  const [purchasesOpen, setPurchasesOpen] = useState(
+    location.pathname.startsWith('/purchases')
+  );
 
   const isActive = (path: string) => location.pathname === path;
 
