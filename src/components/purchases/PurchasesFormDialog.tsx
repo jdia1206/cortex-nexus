@@ -200,18 +200,20 @@ export function PurchasesFormDialog({
                 <Truck className="h-4 w-4 text-muted-foreground" />
                 <Label className="text-base font-medium">{t('purchases.supplierInfo')}</Label>
               </div>
-              <Select value={supplierId} onValueChange={setSupplierId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('purchases.selectSupplier')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectWithCreate
+                value={supplierId}
+                onValueChange={setSupplierId}
+                placeholder={t('purchases.selectSupplier')}
+                items={suppliers.map(s => ({ id: s.id, name: s.name }))}
+                onCreateNew={async (name) => {
+                  if (onCreateSupplier) {
+                    return await onCreateSupplier(name);
+                  }
+                }}
+                isCreating={isCreatingSupplier}
+                createLabel={t('suppliers.add')}
+                createPlaceholder={t('suppliers.namePlaceholder')}
+              />
               
               {selectedSupplier && (
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
