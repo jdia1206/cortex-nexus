@@ -59,6 +59,19 @@ export function useSales() {
         .insert(itemsWithIds);
       if (itemsError) throw itemsError;
 
+      // Deduct stock from products
+      for (const item of items) {
+        if (item.product_id) {
+          const { error: stockError } = await supabase.rpc('deduct_product_stock', {
+            p_product_id: item.product_id,
+            p_quantity: item.quantity,
+          });
+          if (stockError) {
+            console.error('Stock deduction error:', stockError);
+          }
+        }
+      }
+
       return invoiceData;
     },
     onSuccess: () => {
