@@ -62,12 +62,17 @@ export function useSales() {
       // Deduct stock from products
       for (const item of items) {
         if (item.product_id) {
-          const { error: stockError } = await supabase.rpc('deduct_product_stock', {
-            p_product_id: item.product_id,
-            p_quantity: item.quantity,
-          });
-          if (stockError) {
-            console.error('Stock deduction error:', stockError);
+          // Fetch current quantity then deduct
+          const { data: prod } = await supabase
+            .from('products')
+            .select('quantity')
+            .eq('id', item.product_id)
+            .single();
+          if (prod) {
+            await supabase
+              .from('products')
+              .update({ quantity: Math.max(0, prod.quantity - item.quantity) })
+              .eq('id', item.product_id);
           }
         }
       }
