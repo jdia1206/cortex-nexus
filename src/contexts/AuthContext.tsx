@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useSessionTracker } from '@/hooks/useSessionTracker';
 
 interface Profile {
   id: string;
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [userRole, setUserRole] = useState<'admin' | 'user' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { trackLogin, trackLogout } = useSessionTracker();
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -165,12 +167,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   ): Promise<{ error: Error | null }> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Track login session (fire-and-forget)
+      if (signInData.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('tenant_id')
+          .eq('user_id', signInData.user.id)
+          .maybeSingle();
+        trackLogin(signInData.user.id, email, profileData?.tenant_id);
+      }
+
       return { error: null };
     } catch (error) {
       console.error('Signin error:', error);
@@ -179,6 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    await trackLogout();
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);

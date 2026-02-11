@@ -6,6 +6,7 @@ import {
   MessageSquare, 
   BarChart3, 
   Megaphone,
+  Activity,
   Shield,
   LogOut,
   ArrowLeft
@@ -22,6 +23,7 @@ const navItems = [
   { to: '/admin/support', icon: MessageSquare, label: 'Support Tickets' },
   { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements' },
+  { to: '/admin/user-analytics', icon: Activity, label: 'User Analytics' },
 ];
 
 export function AdminSidebar() {

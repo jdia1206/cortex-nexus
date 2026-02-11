@@ -4,3 +4,4 @@ export { default as AdminSubscriptions } from './AdminSubscriptions';
 export { default as AdminSupport } from './AdminSupport';
 export { default as AdminAnalytics } from './AdminAnalytics';
 export { default as AdminAnnouncements } from './AdminAnnouncements';
+export { default as AdminUserAnalytics } from './AdminUserAnalytics';
