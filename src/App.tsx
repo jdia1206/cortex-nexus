@@ -37,6 +37,7 @@ import {
   AdminSupport,
   AdminAnalytics,
   AdminAnnouncements,
+  AdminUserAnalytics,
 } from "./pages/admin";
 
 const queryClient = new QueryClient();
@@ -175,6 +176,11 @@ const App = () => (
               <Route path="/admin/announcements" element={
                 <AdminProtectedRoute>
                   <AdminAnnouncements />
+                </AdminProtectedRoute>
+              } />
+              <Route path="/admin/user-analytics" element={
+                <AdminProtectedRoute>
+                  <AdminUserAnalytics />
                 </AdminProtectedRoute>
               } />
               
